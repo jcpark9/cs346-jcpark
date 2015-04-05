@@ -22,26 +22,33 @@
 #include "rm_rid.h"
 #include "pf.h"
 
+
 //
-// RM_Record: RM Record interface
+// RM_Manager: provides RM file management
 //
-class RM_Record {
+class RM_Manager {
 public:
-    RM_Record ();
-    ~RM_Record();
+    RM_Manager    (PF_Manager &pfm);
+    ~RM_Manager   ();
 
-    // Return the data corresponding to the record.  Sets *pData to the
-    // record contents.
-    RC GetData(char *&pData) const;
+    RC CreateFile (const char *fileName, int recordSize);
+    RC DestroyFile(const char *fileName);
+    RC OpenFile   (const char *fileName, RM_FileHandle &fileHandle);
 
-    // Return the RID associated with the record
-    RC GetRid (RID &rid) const;
+    RC CloseFile  (RM_FileHandle &fileHandle);
+
+private:
+    PF_Manager *pfmanager_;
+
 };
+
+struct RF_FileHdr;
 
 //
 // RM_FileHandle: RM File interface
 //
 class RM_FileHandle {
+    friend class RM_Manager;
 
 public:
     RM_FileHandle ();
@@ -60,16 +67,14 @@ public:
     RC ForcePages (PageNum pageNum = ALL_PAGES);
 
 private:
+    int valid_;
+    RF_FileHdr hdr_;                                // file header
+    int bHdrChanged_;                               // dirty flag for file hdr
+    PF_FileHandle fileHandle_;
 
-   // IsValidPageNum will return TRUE if page number is valid and FALSE
-   // otherwise
-   int IsValidPageNum (PageNum pageNum) const;
-
-   PF_BufferMgr *pBufferMgr;                      // pointer to buffer manager
-   PF_FileHdr hdr;                                // file header
-   int bFileOpen;                                 // file open flag
-   int bHdrChanged;                               // dirty flag for file hdr
+    char *GetSlot(char *pagedata, int slotNum);
 };
+
 
 //
 // RM_FileScan: condition-based scan of records in the file
@@ -90,21 +95,29 @@ public:
     RC CloseScan ();                             // Close the scan
 };
 
+
 //
-// RM_Manager: provides RM file management
+// RM_Record: RM Record interface
 //
-class RM_Manager {
-    PF_Manager *pfmanager_;
+class RM_Record {
+    friend class RM_FileHandle;
+    friend class RM_FileScan;
 
 public:
-    RM_Manager    (PF_Manager &pfm);
-    ~RM_Manager   ();
+    RM_Record ();
+    ~RM_Record();
 
-    RC CreateFile (const char *fileName, int recordSize);
-    RC DestroyFile(const char *fileName);
-    RC OpenFile   (const char *fileName, RM_FileHandle &fileHandle);
+    // Return the data corresponding to the record.  Sets *pData to the
+    // record contents.
+    RC GetData(char *&pData) const;
 
-    RC CloseFile  (RM_FileHandle &fileHandle);
+    // Return the RID associated with the record
+    RC GetRid (RID &rid) const;
+
+private:
+    char *contents_;
+    RID rid_;
+    int valid_;
 };
 
 //
@@ -112,16 +125,17 @@ public:
 //
 void RM_PrintError(RC rc);
 
-#define RF_TOOBIG          (PF_TOOSMALL + 1) // record size too big
-#define PF_PAGENOTINBUF    (START_PF_WARN + 1) // page isn't pinned in buffer
-#define PF_INVALIDPAGE     (START_PF_WARN + 2) // invalid page number
+#define RM_TOOBIG          (START_RM_WARN + 1) // record size too big
+#define RM_RECINVALID      (START_RM_WARN + 2) // record object invalid 
+#define RM_FILEINVALID     (START_RM_WARN + 3) // file handle object invalid
+#define RM_RECNOTEXIST     (START_RM_WARN + 4) // record does not exist
 #define PF_FILEOPEN        (START_PF_WARN + 3) // file is open
 #define PF_CLOSEDFILE      (START_PF_WARN + 4) // file is closed
 #define PF_PAGEFREE        (START_PF_WARN + 5) // page already free
 #define PF_PAGEUNPINNED    (START_PF_WARN + 6) // page already unpinned
 #define PF_EOF             (START_PF_WARN + 7) // end of file
 #define PF_TOOSMALL        (START_PF_WARN + 8) // Resize buffer too small
-#define RF_LASTWARN        PF_TOOSMALL
+#define RM_LASTWARN        PF_TOOSMALL
 
 
 #endif

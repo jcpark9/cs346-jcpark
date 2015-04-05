@@ -2,30 +2,30 @@
 
 RID::RID()
 {
-  pageNum = INVALID_PAGE;
-  pPageData = NULL;
+	valid_ = 0;
 }
 
 RID::RID(PageNum pageNum, SlotNum slotNum)
 {
-  pageNum = INVALID_PAGE;
-  pPageData = NULL;
+	pageNum_ = pageNum;
+	slotNum_ = slotNum;
+	valid_ = 1;
 }
 
-RID::~RID()
-{
-  pageNum = INVALID_PAGE;
-  pPageData = NULL;
-}
+RID::~RID() { }
 
 RC RID::GetPageNum(PageNum &pageNum) const
 {
-  pageNum = INVALID_PAGE;
-  pPageData = NULL;
+	if (!valid_) return RM_RIDINVALID;
+
+	pageNum = pageNum_;
+	return 0;
 }
 
 RC RID::GetSlotNum(SlotNum &slotNum) const
 {
-  pageNum = INVALID_PAGE;
-  pPageData = NULL;
+	if (!valid_) return RM_RIDINVALID;
+	
+	slotNum = slotNum_;
+	return 0;
 }

@@ -22,10 +22,13 @@ typedef int PageNum;
 //
 typedef int SlotNum;
 
+class RM_Record;
 //
 // RID: Record id interface
 //
 class RID {
+	friend class RM_Record;
+
 public:
     RID();                                         // Default constructor
     RID(PageNum pageNum, SlotNum slotNum);
@@ -35,6 +38,11 @@ public:
     RC GetSlotNum(SlotNum &slotNum) const;         // Return slot number
 
 private:
+	PageNum pageNum_;
+	SlotNum slotNum_;
+	int valid_;
 };
+
+#define RM_RIDINVALID          (START_RM_WARN + 0) // record id is not valid
 
 #endif

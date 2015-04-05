@@ -1,9 +1,10 @@
 #include "rm.h"
+#include "rm_rid.h"
 
 RM_Record::RM_Record()
 {
-  pageNum = INVALID_PAGE;
-  pPageData = NULL;
+    valid_ = 0;
+    contents_ = NULL;
 }
 
 //
@@ -15,29 +16,22 @@ RM_Record::RM_Record()
 //
 RM_Record::~RM_Record()
 {
-  // Don't need to do anything
+    if (valid_) delete contents_;
 }
 
-//
-// PF_PageHandle
-//
-// Desc: Copy constructor
-//       If the incoming page handle object refers to a pinned page,
-//       the page will NOT be pinned again.
-// In:   pageHandle - page handle object from which to construct this object
-//
+
 RC RM_Record::RM_GetData(char *&pData) const
 {
-  // Just copy the local variables since there is no local memory
-  // allocation involved
-  this->pageNum = pageHandle.pageNum;
-  this->pPageData = pageHandle.pPageData;
+    if (!valid_) return RM_RECINVALID;
+
+    pData = contents_;
+    return 0;
 }
 
 RC RM_Record::GetRid(RID &rid) const
 {
-  // Just copy the local variables since there is no local memory
-  // allocation involved
-  this->pageNum = pageHandle.pageNum;
-  this->pPageData = pageHandle.pPageData;
+    if (!valid_) return RM_RECINVALID;
+    
+    rid = rid_;
+    return 0;
 }
