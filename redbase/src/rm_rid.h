@@ -22,13 +22,10 @@ typedef int PageNum;
 //
 typedef int SlotNum;
 
-class RM_Record;
 //
 // RID: Record id interface
 //
 class RID {
-	friend class RM_Record;
-
 public:
     RID();                                         // Default constructor
     RID(PageNum pageNum, SlotNum slotNum);

@@ -22,6 +22,10 @@
 #include "rm_rid.h"
 #include "pf.h"
 
+class RM_FileHandle;
+class RM_Record;
+typedef struct RM_FileHdr RM_FileHdr;
+class RM_FileScan;
 
 //
 // RM_Manager: provides RM file management
@@ -42,13 +46,13 @@ private:
 
 };
 
-struct RF_FileHdr;
 
 //
 // RM_FileHandle: RM File interface
 //
 class RM_FileHandle {
     friend class RM_Manager;
+    friend class RM_FileScan;
 
 public:
     RM_FileHandle ();
@@ -68,11 +72,12 @@ public:
 
 private:
     int valid_;
-    RF_FileHdr hdr_;                                // file header
-    int bHdrChanged_;                               // dirty flag for file hdr
-    PF_FileHandle fileHandle_;
+    RM_FileHdr *hdr_;                               // file header
+    int hdrModified_;                               // dirty flag for file hdr
+    PF_FileHandle PFfileHandle_;
 
-    char *GetSlot(char *pagedata, int slotNum);
+    SlotNum FindAvailableSlot(unsigned short bitmap);
+    RC GetPageData(PageNum pageNum, char *&pageData) const;
 };
 
 
@@ -93,6 +98,26 @@ public:
                   ClientHint pinHint = NO_HINT); // Initialize a file scan
     RC GetNextRec(RM_Record &rec);               // Get next matching record
     RC CloseScan ();                             // Close the scan
+
+private:
+    RM_FileHandle fileHandle_;
+    AttrType attrType_;
+    int attrLength_;
+    int attrOffset_;
+    CompOp compOp_;
+    void *value_;
+    ClientHint pinHint_;
+
+    int valid_;
+    int currentPage_;
+    int currentSlot_;
+    PF_PageHandle pageHandle_;
+
+    RC FetchNextPage();
+    int IntCompare(void *rec, void *val, int n);
+    int FloatCompare(void *rec, void *val, int n);
+    int StringCompare(void *rec, void *val, int n);
+    int ConditionMet(char *slotData);
 };
 
 
@@ -129,13 +154,13 @@ void RM_PrintError(RC rc);
 #define RM_RECINVALID      (START_RM_WARN + 2) // record object invalid 
 #define RM_FILEINVALID     (START_RM_WARN + 3) // file handle object invalid
 #define RM_RECNOTEXIST     (START_RM_WARN + 4) // record does not exist
-#define PF_FILEOPEN        (START_PF_WARN + 3) // file is open
-#define PF_CLOSEDFILE      (START_PF_WARN + 4) // file is closed
-#define PF_PAGEFREE        (START_PF_WARN + 5) // page already free
-#define PF_PAGEUNPINNED    (START_PF_WARN + 6) // page already unpinned
-#define PF_EOF             (START_PF_WARN + 7) // end of file
-#define PF_TOOSMALL        (START_PF_WARN + 8) // Resize buffer too small
-#define RM_LASTWARN        PF_TOOSMALL
+#define RM_FILESCANINVALID (START_RM_WARN + 5) // file scan object invalid
+#define RM_EOF             (START_RM_WARN + 6) // no more records to be scanned
+#define RM_RECNOTEMPTY     (START_RM_WARN + 7) // record object is not empty
+
+#define RM_LASTWARN        RM_RECNOTEMPTY
+
+#define RM_LASTERROR       (END_RM_ERR)
 
 
 #endif

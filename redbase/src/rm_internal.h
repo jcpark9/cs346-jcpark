@@ -4,41 +4,33 @@
 
 #include <cstdlib>
 #include <cstring>
-#include "pf.h"
+#include "rm.h"
 
 //
 // Constants and defines
 //
-const int PF_BUFFER_SIZE = 40;     // Number of pages in the buffer
-const int PF_HASH_TBL_SIZE = 20;   // Size of hash table
 
-#define CREATION_MASK      0600    // r/w privileges to owner only
-#define PF_PAGE_LIST_END  -1       // end of list of free pages
-#define PF_PAGE_USED      -2       // page is being used
+#define RM_PAGE_LIST_END  -1       // end of list of free pages
+#define RM_PAGE_FULL      -2       // page is being used
+#define HEADER_PAGENUM	0
 
-// L_SET is used to indicate the "whence" argument of the lseek call
-// defined in "/usr/include/unistd.h".  A value of 0 indicates to
-// move to the absolute location specified.
-#ifndef L_SET
-#define L_SET              0
-#endif
-
+//
+// RM_PageHdr: Header structure for file
+//
 struct RM_FileHdr {
-	LinkList<> freePages;
-    int recordSize;
-    int bitmapLength;
-    int recordsPerPage;
+	int firstFree;			// page# of page with free slot (head of linked list)
+    int recordSize;			// Size of each record
+    int recordsPerPage;		// Maximum # of records per page
     int numPages;      		// # of pages in the file
 };
 
 //
-// PF_PageHdr: Header structure for pages
+// RM_PageHdr: Header structure for pages
 //
 struct RM_PageHdr {
-    unsigned char *slotsFull;
+	int numRecords;				// Number of records populating this page
+	int nextFree;				// page# of page with free slot
+    unsigned short slotStatus; 	// bitmap for storing whether slot is available or not
 };
-
-// Justify the file header to the length of one page
-const int PF_FILE_HDR_SIZE = PF_PAGE_SIZE + sizeof(PF_PageHdr);
 
 #endif

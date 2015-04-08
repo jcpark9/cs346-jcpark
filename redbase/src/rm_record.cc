@@ -1,4 +1,4 @@
-#include "rm.h"
+#include "rm_internal.h"
 #include "rm_rid.h"
 
 RM_Record::RM_Record()
@@ -16,11 +16,11 @@ RM_Record::RM_Record()
 //
 RM_Record::~RM_Record()
 {
-    if (valid_) delete contents_;
+    if (valid_) delete[] contents_;
 }
 
 
-RC RM_Record::RM_GetData(char *&pData) const
+RC RM_Record::GetData(char *&pData) const
 {
     if (!valid_) return RM_RECINVALID;
 
