@@ -6,6 +6,15 @@
 #include <cstring>
 #include "rm.h"
 
+
+
+#include <cstdio>
+#include <iostream>
+#include <cstring>
+#include <unistd.h>
+#include <cstdlib>
+
+using namespace std;
 //
 // Constants and defines
 //
@@ -14,15 +23,8 @@
 #define RM_PAGE_FULL      -2       // page is being used
 #define HEADER_PAGENUM	0
 
-//
-// RM_PageHdr: Header structure for file
-//
-struct RM_FileHdr {
-	int firstFree;			// page# of page with free slot (head of linked list)
-    int recordSize;			// Size of each record
-    int recordsPerPage;		// Maximum # of records per page
-    int numPages;      		// # of pages in the file
-};
+#define BYTELEN 8
+#define NUMLEN 4
 
 //
 // RM_PageHdr: Header structure for pages
@@ -30,7 +32,9 @@ struct RM_FileHdr {
 struct RM_PageHdr {
 	int numRecords;				// Number of records populating this page
 	int nextFree;				// page# of page with free slot
-    unsigned short slotStatus; 	// bitmap for storing whether slot is available or not
 };
+
+/*  Bitmap (unsigned char[]) to indicate status of slots follows RM_PageHdr */
+
 
 #endif

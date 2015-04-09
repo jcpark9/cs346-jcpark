@@ -7,9 +7,13 @@ RID::RID()
 
 RID::RID(PageNum pageNum, SlotNum slotNum)
 {
-	pageNum_ = pageNum;
-	slotNum_ = slotNum;
-	valid_ = 1;
+	if (pageNum > 0 && slotNum >= 0) {
+		pageNum_ = pageNum;
+		slotNum_ = slotNum;
+		valid_ = 1;
+	} else {
+		valid_ = 0;
+	}
 }
 
 RID::~RID() { }

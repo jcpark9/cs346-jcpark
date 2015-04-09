@@ -24,8 +24,19 @@
 
 class RM_FileHandle;
 class RM_Record;
-typedef struct RM_FileHdr RM_FileHdr;
 class RM_FileScan;
+
+//
+// RM_FileHdr: Header structure for file
+//
+struct RM_FileHdr {
+    int firstFree;          // page# of page with free slot (head of linked list)
+    int recordSize;         // Size of each record
+    int recordsPerPage;     // Maximum # of records per page
+    int numPages;           // # of pages in the file
+    int bitmapSize;         // Size of the bitmap used to indicate whether a slot in a page is filled
+};
+typedef struct RM_FileHdr RM_FileHdr;
 
 //
 // RM_Manager: provides RM file management
@@ -72,11 +83,11 @@ public:
 
 private:
     int valid_;
-    RM_FileHdr *hdr_;                               // file header
+    RM_FileHdr hdr_;                               // file header
     int hdrModified_;                               // dirty flag for file hdr
     PF_FileHandle PFfileHandle_;
 
-    SlotNum FindAvailableSlot(unsigned short bitmap);
+    SlotNum FindAvailableSlot(char *pageData);
     RC GetPageData(PageNum pageNum, char *&pageData) const;
 };
 
@@ -112,12 +123,10 @@ private:
     int currentPage_;
     int currentSlot_;
     PF_PageHandle pageHandle_;
-
+    char *pageData_;
     RC FetchNextPage();
-    int IntCompare(void *rec, void *val, int n);
-    int FloatCompare(void *rec, void *val, int n);
-    int StringCompare(void *rec, void *val, int n);
     int ConditionMet(char *slotData);
+    int scanComplete_;
 };
 
 
@@ -150,15 +159,15 @@ private:
 //
 void RM_PrintError(RC rc);
 
-#define RM_TOOBIG          (START_RM_WARN + 1) // record size too big
+#define RM_RECSZINVALID    (START_RM_WARN + 1) // record size too big or small
 #define RM_RECINVALID      (START_RM_WARN + 2) // record object invalid 
 #define RM_FILEINVALID     (START_RM_WARN + 3) // file handle object invalid
 #define RM_RECNOTEXIST     (START_RM_WARN + 4) // record does not exist
 #define RM_FILESCANINVALID (START_RM_WARN + 5) // file scan object invalid
 #define RM_EOF             (START_RM_WARN + 6) // no more records to be scanned
-#define RM_RECNOTEMPTY     (START_RM_WARN + 7) // record object is not empty
+#define RM_SCANPARAMINVALID (START_RM_WARN + 7) // parameters for scanning are invalid
 
-#define RM_LASTWARN        RM_RECNOTEMPTY
+#define RM_LASTWARN        RM_SCANPARAMINVALID
 
 #define RM_LASTERROR       (END_RM_ERR)
 

@@ -11,13 +11,13 @@ using namespace std;
 //
 static char *RM_WarnMsg[] = {
   (char*)"record ID is not initialized",
-  (char*)"record size is too big",
+  (char*)"record size is not valid",
   (char*)"record is not initialized",
   (char*)"filehandle is not initialized",
   (char*)"record does not exist",
   (char*)"filescan is not initialized",
   (char*)"no more records found for file scan",
-  (char*)"record object is not empty"
+  (char*)"parameters for file scan are invalid"
 };
 
 

@@ -431,6 +431,8 @@ RC PF_BufferMgr::FlushPages(int fd)
 #endif
          // Ensure the page is not pinned
          if (bufTable[slot].pinCount) {
+            cout << "count" << bufTable[slot].pinCount << endl;
+            cout << "still pinned: " << bufTable[slot].pageNum << endl;
             rcWarn = PF_PAGEPINNED;
          }
          else {
