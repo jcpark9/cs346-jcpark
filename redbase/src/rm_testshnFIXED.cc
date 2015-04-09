@@ -223,15 +223,14 @@ RC AddRecs(RM_FileHandle &fh, int numRecs, RID* r_arr)
 
     printf("\nadding %d records\n", numRecs);
     for (i = 0; i < numRecs; i++) {
-        r_arr[i] = RID(); 
       //  memset((void *)&recBuf, 0, sizeof(recBuf));
         memset(recBuf.str, ' ', STRLEN);
         sprintf(recBuf.str, "a%d", i);
         recBuf.num = i;
         recBuf.r = (float)i;
         if ((rc = InsertRec(fh, (char *)&recBuf, r_arr[i])) ||
-            (rc = rid.GetPageNum(pageNum)) ||
-            (rc = rid.GetSlotNum(slotNum)))
+            (rc = r_arr[i].GetPageNum(pageNum)) ||
+            (rc = r_arr[i].GetSlotNum(slotNum)))
             return (rc);
 
         if ((i + 1) % PROG_UNIT == 0){

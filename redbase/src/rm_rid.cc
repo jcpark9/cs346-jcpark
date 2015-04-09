@@ -1,5 +1,16 @@
 #include "rm_rid.h"
 
+
+
+
+#include <cstdio>
+#include <iostream>
+#include <cstring>
+#include <unistd.h>
+#include <cstdlib>
+
+using namespace std;
+//
 RID::RID()
 {
 	valid_ = 0;

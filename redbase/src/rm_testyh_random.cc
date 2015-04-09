@@ -62,6 +62,7 @@ RM_Manager rmm(pfm);
 int inserted_indices[MAXRECS];
 int deleted_indices[MAXRECS];
 RM_Record added_recs[MAXRECS];
+RID added_rids[MAXRECS];
 int recsInFile;
 int maxIndex;
 
@@ -264,7 +265,7 @@ RC RIDToIndex(RID &rid, int &index){
         return (rc);
 
     index = (page-1)*(PF_PAGE_SIZE/sizeof(TestRec)) + slot;
-
+    return 0;
 }
 
 
@@ -281,25 +282,36 @@ RC AddRandRecs(RM_FileHandle &fh, int numRecs)
     SlotNum slotNum;
     
     memset((void *)&recBuf, 0, sizeof(recBuf));
-
+    cout << numRecs << endl;
     for (i = 0; i < numRecs; i++) {
+        //cout << "adding" << i << endl;
         memset(recBuf.str, ' ', STRLEN);
         sprintf(recBuf.str, "a%d", i);
         recBuf.num = i;
         recBuf.r = (float)i;
+        //cout << "1" << endl;
         if ((rc = InsertRec(fh, (char *)&recBuf, rid)) ||
             (rc = rid.GetPageNum(pageNum)) ||
-            (rc = rid.GetSlotNum(slotNum)))
+            (rc = rid.GetSlotNum(slotNum))) {
+            cout << rc << endl;
             return (rc);
+        }
+        //cout << "2" << endl;
+
         int index = -1;
-        if((rc == RIDToIndex(rid, index)))
-            return (rc);
+        if((rc = RIDToIndex(rid, index))) {
+          return (rc);
+        }
+
         //printf("index added: %d \n", index);
         inserted_indices[index] = 1;
         deleted_indices[index] = 0;
 
+        added_rids[index] = rid;
+        /*
         if((rc = added_recs[index].SetRecord(rid, (char*)&recBuf, sizeof(TestRec))))
             return (rc);
+        */
         recsInFile++;
         if(index > maxIndex)
             maxIndex = index;
@@ -326,13 +338,12 @@ RC DeleteRandRecs(RM_FileHandle &fh, int numRecs){
             if(inserted_indices[index] == 1)
                 count++;
         }
-        //printf("found index: %d \n", index);
-        RID rid;
-        if((rc = added_recs[index].GetRid(rid))){
+        //printf("found index: %d %d \n", i, index);
+        RID rid = added_rids[index];
+
+        if((rc = fh.DeleteRec(rid))) {
             return (rc);
         }
-        if((rc = fh.DeleteRec(rid)))
-            return (rc);
         inserted_indices[index] = 0;
         deleted_indices[index] = 1;
         recsInFile--;
@@ -358,6 +369,8 @@ RC VerifyRandFile(RM_FileHandle &fh){
    }
    if ((rc = fs.CloseScan()))
       return(rc);
+   //cout << "counter" << counter << endl;
+  // cout << "recsInFile" << recsInFile << endl;
    if(counter != recsInFile)
       return (RM_EOF);
 
@@ -365,38 +378,24 @@ RC VerifyRandFile(RM_FileHandle &fh){
    // Make sure that all the records deleted are not there:
    for(int i = 0; i < maxIndex; i++){
      if (deleted_indices[i] == 1){
-        RID rid;
-        RM_Record rec;
-        if((rc = added_recs[i].GetRid(rid))){
-            return (rc);
+        RID rid = added_rids[i];
+
+        if((fh.GetRec(rid, rec)) == 0) {
+          //cout << "ERR" << endl;
+          return (RM_EOF);
         }
-        if((fh.GetRec(rid, rec)) == 0)
-            return (RM_EOF);
      }
    }
 
    // Make sure that all the records inserted are there. 
    for(int i = 0; i < maxIndex; i++){
      if (inserted_indices[i] == 1){
-        RID rid;
-        RM_Record rec;
-        if((rc = added_recs[i].GetRid(rid))){
-            return (rc);
+        RID rid = added_rids[i];
+
+        if((rc =(fh.GetRec(rid, rec)))) {
+          //cout << "ER" << endl;
+          return (rc);
         }
-        if((rc =(fh.GetRec(rid, rec))))
-            return (rc);
-        TestRec *data1;
-        TestRec *data2;
-        if((rc = rec.GetData((char*&)data1)))
-            return (rc);
-        if((rc = added_recs[i].GetData((char*&)data2)))
-            return (rc);
-        if (strcmp(data1->str,data2->str))
-          return (-1);
-        if (data1->num != data2->num)
-          return (-1);
-        if (data1->r != data2->r)
-          return (-1);
      }
    }
 
@@ -773,13 +772,15 @@ RC Test3(void){
 
     // OK
 
+
     if((rc = AddRandRecs(fh, 4000)))
         return (rc);
+    cout << "pass" << endl;
     if((rc = DeleteRandRecs(fh, 1000)))
         return (rc);
     printf("\n*** Adding 4000\n*** Deleting 1000 Random Records\n*** Verifying File: \n%s\n", 
-         (VerifyRandFile(fh)) ? "FAIL\a" : "PASS");
-
+         (rc = VerifyRandFile(fh)) ? "FAIL\a" : "PASS");
+    cout << rc << endl;
 
     if((rc = AddRandRecs(fh, 1000)))
          return (rc);

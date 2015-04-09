@@ -38,7 +38,10 @@ RC RM_FileHandle::GetRec(const RID &rid, RM_Record &rec) const
     /* Copy record data to rec*/
     int recSz = hdr_.recordSize;
     char *slotData = pageData + sizeof(RM_PageHdr) + hdr_.bitmapSize  + recSz * slotNum;
-    if (!rec.valid_) rec.contents_ = new char[recSz];
+    
+    if (rec.valid_) delete[] rec.contents_;
+    rec.contents_ = new char[recSz];
+    
     memcpy(rec.contents_, slotData, recSz);
     rec.rid_ = rid;
     rec.valid_ = 1;

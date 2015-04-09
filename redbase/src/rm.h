@@ -166,6 +166,7 @@ void RM_PrintError(RC rc);
 #define RM_FILESCANINVALID (START_RM_WARN + 5) // file scan object invalid
 #define RM_EOF             (START_RM_WARN + 6) // no more records to be scanned
 #define RM_SCANPARAMINVALID (START_RM_WARN + 7) // parameters for scanning are invalid
+#define RM_SCANOPEN         (START_RM_WARN + 8) // file scan is still open
 
 #define RM_LASTWARN        RM_SCANPARAMINVALID
 

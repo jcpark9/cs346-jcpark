@@ -75,18 +75,19 @@ void PrintError(RC rc)
 //
 int main(int argc, char *argv[])
 {
-   RC             result = OK_RC;
-   char*          recbuf;
-   char           bufchar;
-   int            recSize, numTest, recNum, i;
-   RM_FileHandle  fh;
-   RID            rid;
-   RM_FileScan    scan;
-   RM_Record      rec;
-   char*          recData;
+       RC             result = OK_RC;
+      int            recSize, numTest, recNum, i;
+      char*          recData;
+      char*          recbuf;
+      char           bufchar;
+      RM_FileHandle  fh;
+      RM_FileScan    scan;
+      RID            rid;
+      RM_Record      rec;
 
    // perform tests
-   for (numTest = 5; numTest < (int)(sizeof(RecSize)/4); numTest++) {
+   for (numTest = 0; numTest < (int)(sizeof(RecSize)/4); numTest++) {
+
       recSize = RecSize[numTest];
       cout << "Starting RM test for record size " << recSize << "\n";
 
@@ -110,7 +111,7 @@ int main(int argc, char *argv[])
       // add records
       cout << "Adding " << NUM_RECS << " records... ";
       cout.flush();
-      recbuf = (char*)malloc(recSize);
+      recbuf = new char[recSize];
       for (recNum = 0; recNum < NUM_RECS; recNum++) {
          // Fill the buffer with a certain byte, which is incremented
          // each time.  We'll use this later to check validity
@@ -189,8 +190,7 @@ int main(int argc, char *argv[])
       cout << "Success!\n";
       cout.flush();
 
-      free(recbuf);
-
+      delete[] recbuf;
       cout << "Closing file... ";
       cout.flush();
       result = rmm.CloseFile(fh);

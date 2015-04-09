@@ -22,6 +22,7 @@ RC RM_FileScan::OpenScan  (const RM_FileHandle &fileHandle,
                   void       *value,
                   ClientHint pinHint)
 {
+  if (valid_) return RM_SCANOPEN;
   if (!fileHandle.valid_) return RM_FILEINVALID;
   /* Check if scan parameters are valid */
   if (attrLength <= 0 || attrLength > MAXSTRINGLEN ||
@@ -71,7 +72,8 @@ RC RM_FileScan::GetNextRec(RM_Record &rec)
       if (value_ == NULL || ConditionMet(slotData)) {
         rec.rid_ = RID(currentPage_, currentSlot_++);
 
-        if (!rec.valid_) rec.contents_ = new char[recSz];
+        if (rec.valid_) delete[] rec.contents_;
+        rec.contents_ = new char[recSz];
         rec.valid_ = 1;
         memcpy(rec.contents_, slotData, recSz);
         return 0;
