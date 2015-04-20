@@ -7,8 +7,7 @@ RM_Manager::RM_Manager(PF_Manager &pfm)
     pfmanager_ = &(pfm);
 }
 
-RM_Manager::~RM_Manager()
-{ }
+RM_Manager::~RM_Manager() { }
 
 
 RC RM_Manager::CreateFile(const char *fileName, int recordSize)

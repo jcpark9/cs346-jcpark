@@ -35,7 +35,10 @@ using namespace std;
 #define PROG_UNIT   50               // how frequently to give progress
                                       //   reports when adding lots of recs
 #define FEW_RECS   20                // number of records added in
+#define SOME_RECS  300
+#define MANY_RECS  5000
 
+RID rids[MANY_RECS];
 //
 // Computes the offset of a field in a record (should be in <stddef.h>)
 //
@@ -63,6 +66,9 @@ RM_Manager rmm(pfm);
 //
 RC Test1(void);
 RC Test2(void);
+RC Test3(void);
+RC Test4(void);
+
 
 void PrintError(RC rc);
 void LsFile(char *fileName);
@@ -83,11 +89,13 @@ RC GetNextRecScan(RM_FileScan &fs, RM_Record &rec);
 //
 // Array of pointers to the test functions
 //
-#define NUM_TESTS       2               // number of tests
+#define NUM_TESTS       4               // number of tests
 int (*tests[])() =                      // RC doesn't work on some compilers
 {
     Test1,
-    Test2
+    Test2,
+    Test3,
+    Test4
 };
 
 //
@@ -229,6 +237,7 @@ RC AddRecs(RM_FileHandle &fh, int numRecs)
             printf("%d  ", i + 1);
             fflush(stdout);
         }
+        rids[i] = rid;
     }
     if (i % PROG_UNIT != 0)
         printf("%d\n", i);
@@ -496,4 +505,178 @@ RC Test2(void)
 
     printf("\ntest2 done ********************\n");
     return (0);
+}
+
+
+RC Test3(void){
+   RC rc;
+   RM_FileHandle fh;
+   printf("test3 starting ****************\n");
+
+    printf("\n*** File Creation Test: %s\n", 
+         (CreateFile(FILENAME, sizeof(TestRec))) ? "FAIL\a" : "PASS"); 
+    
+    printf("\n*** File Open Test: %s\n", 
+         (OpenFile(FILENAME, fh)) ? "FAIL\a" : "PASS");
+    
+    printf("\n*** Add Records Test: %s\n", 
+         (AddRecs(fh, SOME_RECS)) ? "FAIL\a" : "PASS");
+
+    RM_FileScan fs;
+    rc=fs.OpenScan(fh,INT,sizeof(int),offsetof(TestRec, num), 
+         NO_OP, NULL);
+    rc=fs.OpenScan(fh,INT,sizeof(int),offsetof(TestRec, num), 
+         NO_OP, NULL);
+    printf("\n*** Open a filescan twice before closing the first one: %s\n", 
+         (rc) ? "PASS\a" : "FAIL");
+
+    RM_Record rec;
+    int counter = 0;
+    for (int i=0; i < SOME_RECS; i++) {
+        rc = GetNextRecScan(fs, rec);
+        counter++;
+    }
+
+   printf("counter: %d \n", counter);
+   printf("\n*** Verifying # of records: %s\n", 
+         ((counter == SOME_RECS) && !rc) ? "PASS\a" : "FAIL");
+
+   printf("\n*** Should get RM_EOF after scan complete: %s\n", 
+         GetNextRecScan(fs, rec) ? "PASS\a" : "FAIL");
+
+   printf("\n*** Closing a filescan: %s\n", 
+         fs.CloseScan() ? "FAIL\a" : "PASS");
+
+   printf("\n*** Closing a filescan twice: %s\n", 
+         (fs.CloseScan()) ? "PASS\a" : "FAIL");
+
+    for (int i=0; i < SOME_RECS; i++) {
+        rc = DeleteRec(fh, rids[i]);
+    }
+
+   printf("\n*** Deleting records: %s\n", 
+         rc ? "FAIL\a" : "PASS");
+
+    printf("\n*** Add More Records Test: %s\n", 
+         (AddRecs(fh, MANY_RECS)) ? "FAIL\a" : "PASS");
+
+    for (int i=0; i < 100; i++) {
+        int j = rand() % MANY_RECS;
+        rc = DeleteRec(fh, rids[j]);
+    }
+
+   printf("\n*** Deleting random records: %s\n", 
+         rc ? "FAIL\a" : "PASS");
+
+    rc=fs.OpenScan(fh,INT,sizeof(int),offsetof(TestRec, num), 
+         NO_OP, NULL);
+    printf("\n*** Reusing a filescan: %s\n", 
+         (rc) ? "FAIL\a" : "PASS");
+
+    counter = 0;
+    while (GetNextRecScan(fs,rec) == 0) {
+        counter++;
+    }
+    rc = GetNextRecScan(fs, rec);
+
+    fs.CloseScan();
+   printf("\n*** Verifying # of records: %s\n", 
+         ((counter == MANY_RECS - 100) && rc == RM_EOF) ? "PASS\a" : "FAIL");
+
+   printf("\n*** Closing a file: %s\n", 
+         (CloseFile(FILENAME, fh)) ? "FAIL\a" : "PASS"); 
+
+   printf("\n*** Destroying a file: %s\n", 
+         (DestroyFile(FILENAME)) ? "FAIL\a" : "PASS"); 
+
+   printf("\ntest3 done ********************\n");
+   return (0);
+}
+
+RC Test4(void){
+   RC rc;
+   RM_FileHandle fh;
+   printf("test4 starting ****************\n");
+
+
+    printf("\n*** Invalid File Creation Test: %s\n", 
+        (CreateFile(FILENAME, -129)) ? "PASS\a" : "FAIL"); 
+
+    printf("\n*** File Creation Test: %s\n", 
+         (CreateFile(FILENAME, sizeof(TestRec))) ? "FAIL\a" : "PASS"); 
+    
+    printf("\n*** File Open Test: %s\n", 
+         (OpenFile(FILENAME, fh)) ? "FAIL\a" : "PASS");
+    
+    printf("\n*** Add Records Test: %s\n", 
+         (AddRecs(fh, MANY_RECS)) ? "FAIL\a" : "PASS");
+
+    RM_FileScan fs;
+
+    rc=fs.OpenScan(fh,INT,sizeof(int),offsetof(TestRec, num), 
+         EQ_OP, NULL);
+   printf("\n*** Invalid parameters for file scan (1): %s\n", 
+         rc ? "PASS\a" : "FAIL");
+    rc=fs.OpenScan(fh,INT,7,offsetof(TestRec, num), 
+         NO_OP, NULL);
+   printf("\n*** Invalid parameters for file scan (2): %s\n", 
+         rc ? "PASS\a" : "FAIL");
+    rc=fs.OpenScan(fh,INT,sizeof(int),-4, 
+         NO_OP, NULL);
+   printf("\n*** Invalid parameters for file scan (3): %s\n", 
+         rc ? "PASS\a" : "FAIL");
+
+
+    rc=fs.OpenScan(fh,INT,sizeof(int),offsetof(TestRec, num), 
+         NO_OP, NULL);
+
+    RM_Record rec;
+    int counter = 0;
+    for (int i=0; i < MANY_RECS; i++) {
+        rc = GetNextRecScan(fs, rec);
+        counter++;
+    }
+
+   printf("counter: %d \n", counter);
+   printf("\n*** Verifying # of records: %s\n", 
+         ((counter == MANY_RECS) && !rc) ? "PASS\a" : "FAIL");
+
+   printf("\n*** Should get RM_EOF after scan complete: %s\n", 
+         GetNextRecScan(fs, rec) ? "PASS\a" : "FAIL");
+
+   printf("\n*** Closing a filescan: %s\n", 
+         fs.CloseScan() ? "FAIL\a" : "PASS");
+
+    // Delete every other record
+    for (int i=0; i < MANY_RECS/2; i += 2) {
+        rc = DeleteRec(fh, rids[i]);
+    }
+
+   printf("\n*** Deleting records: %s\n", 
+         rc ? "FAIL\a" : "PASS");
+
+   float compare = MANY_RECS/2;
+    rc=fs.OpenScan(fh,FLOAT,sizeof(float),offsetof(TestRec, r), 
+         LT_OP, &compare);
+    printf("\n*** Reusing a filescan: %s\n", 
+         (rc) ? "FAIL\a" : "PASS");
+
+    counter = 0;
+    while (GetNextRecScan(fs,rec) == 0) {
+        counter++;
+    }
+    rc = GetNextRecScan(fs, rec);
+
+    fs.CloseScan();
+   printf("\n*** Verifying # of records: %s\n", 
+         ((counter == MANY_RECS/4) && rc == RM_EOF) ? "PASS\a" : "FAIL");
+
+   printf("\n*** Closing a file: %s\n", 
+         (CloseFile(FILENAME, fh)) ? "FAIL\a" : "PASS"); 
+
+   printf("\n*** Destroying a file: %s\n", 
+         (DestroyFile(FILENAME)) ? "FAIL\a" : "PASS"); 
+
+   printf("\ntest4 done ********************\n");
+   return (0);
 }

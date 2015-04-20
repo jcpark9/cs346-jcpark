@@ -6,25 +6,16 @@
 #include <cstring>
 #include "rm.h"
 
-
-
-#include <cstdio>
-#include <iostream>
-#include <cstring>
-#include <unistd.h>
-#include <cstdlib>
-
-using namespace std;
 //
 // Constants and defines
 //
 
 #define RM_PAGE_LIST_END  -1       // end of list of free pages
 #define RM_PAGE_FULL      -2       // page is being used
-#define HEADER_PAGENUM	0
+#define HEADER_PAGENUM	0		// Page number of file header
 
-#define BYTELEN 8
-#define NUMLEN 4
+#define BYTELEN 8				// length of bits per byte
+#define NUMLEN 4				// length of FLOAT and INT
 
 //
 // RM_PageHdr: Header structure for pages
@@ -34,7 +25,7 @@ struct RM_PageHdr {
 	int nextFree;				// page# of page with free slot
 };
 
-/*  Bitmap (unsigned char[]) to indicate status of slots follows RM_PageHdr */
+/* RM_PageHdr in each page is followed by bitmap (unsigned char[]) to indicate availability of slots */
 
 
 #endif

@@ -12,6 +12,8 @@ RM_FileScan::RM_FileScan() {
 }
 
 RM_FileScan::~RM_FileScan() {
+  // Unpin the current page if the object is being destroyed amid scanning
+  if (!scanComplete_) fileHandle_.PFfileHandle_.UnpinPage(currentPage_);
 }
 
 RC RM_FileScan::OpenScan  (const RM_FileHandle &fileHandle,
@@ -29,6 +31,7 @@ RC RM_FileScan::OpenScan  (const RM_FileHandle &fileHandle,
     attrOffset < 0 || attrOffset >= fileHandle.hdr_.recordSize ||
     attrType < 0 || attrType > STRING ||
     compOp < 0 || compOp > GE_OP ||
+    (value == NULL && compOp != NO_OP) ||
     ((attrType == INT || attrType == FLOAT) && attrLength != NUMLEN)) return RM_SCANPARAMINVALID;
 
   /* Save parameters passed to the function */
@@ -72,7 +75,7 @@ RC RM_FileScan::GetNextRec(RM_Record &rec)
       if (value_ == NULL || ConditionMet(slotData)) {
         rec.rid_ = RID(currentPage_, currentSlot_++);
 
-        if (rec.valid_) delete[] rec.contents_;
+        if (rec.valid_) delete[] rec.contents_; // delete contents if record object already contains another record
         rec.contents_ = new char[recSz];
         rec.valid_ = 1;
         memcpy(rec.contents_, slotData, recSz);
@@ -132,7 +135,10 @@ int FloatCompare(char *rec, void *val, int n) {
   return 1;
 }
 
-/* Returns 1 if the condition is met for the record in slotData */
+/* Returns 1 if the condition is met for the record residing in slotData 
+ * returns 0 otherwise
+ * returns -1 on error
+ */
 int RM_FileScan::ConditionMet(char *slotData) {
   /* Fetch data for the attribute */
   char *attrData = slotData + attrOffset_;
@@ -186,6 +192,7 @@ RC RM_FileScan::CloseScan()
   return 0;
 }
 
+/* Checks whether the slot is full by looking at the bitmap */
 int SlotFull(int slotNum, char *pageData) {
     unsigned char *bitmap = (unsigned char *) (pageData + sizeof(RM_PageHdr));
 

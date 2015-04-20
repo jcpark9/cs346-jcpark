@@ -1,16 +1,5 @@
 #include "rm_rid.h"
 
-
-
-
-#include <cstdio>
-#include <iostream>
-#include <cstring>
-#include <unistd.h>
-#include <cstdlib>
-
-using namespace std;
-//
 RID::RID()
 {
 	valid_ = 0;
@@ -18,6 +7,8 @@ RID::RID()
 
 RID::RID(PageNum pageNum, SlotNum slotNum)
 {
+	// Checks if pageNum and slotNum is valid
+	// pageNum > 0 since page 0 is reserved for file header, which does not contain any records
 	if (pageNum > 0 && slotNum >= 0) {
 		pageNum_ = pageNum;
 		slotNum_ = slotNum;

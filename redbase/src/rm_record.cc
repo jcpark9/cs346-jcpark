@@ -7,16 +7,9 @@ RM_Record::RM_Record()
     contents_ = NULL;
 }
 
-//
-// ~PF_PageHandle
-//
-// Desc: Destroy the page handle object.
-//       If the page handle object refers to a pinned page, the page will
-//       NOT be unpinned.
-//
 RM_Record::~RM_Record()
 {
-    if (valid_) delete[] contents_;
+    if (valid_) delete[] contents_; // free memory if Record used to hold data
 }
 
 

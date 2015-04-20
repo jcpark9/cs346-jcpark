@@ -131,7 +131,6 @@ RC RM_FileHandle::DeleteRec(const RID &rid)
     rc = rid.GetSlotNum(slotNum);
     if (rc) return rc;
     
-    //cout << "d" << pageNum << ":" << slotNum << endl;
     /* Get data of the page that record resides on */
     char *pageData;
     rc = GetPageData(pageNum, pageData);
@@ -141,7 +140,7 @@ RC RM_FileHandle::DeleteRec(const RID &rid)
     GetSlotBit(slotNum, pageData, clear); // Mark the slot as free on bitmap
     // Decrement number of records in the page
     if ((phdr->numRecords)-- == hdr_.recordsPerPage) {
-        /* Add current page to the list of free pages */
+        /* Add current page to the list of free pages if it is now free */
         phdr->nextFree = hdr_.firstFree;
         hdr_.firstFree = pageNum;
         hdrModified_ = 1;
@@ -215,6 +214,11 @@ SlotNum RM_FileHandle::FindAvailableSlot(char *pageData) {
     return -1;
 }
 
+/* Checks or modifies the bit in slot availability bitmap 
+ * if mode is 'get', checks the bit and returns it
+ * if mode is 'clear', marks the slot as empty
+ * if mode is 'set', marks the slot as full
+ */
 int GetSlotBit(int slotNum, char *pageData, Mode mode) {
     unsigned char *bitmap = (unsigned char *) (pageData + sizeof(RM_PageHdr));
 
