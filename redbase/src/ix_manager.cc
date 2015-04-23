@@ -109,12 +109,13 @@ RC IX_Manager::OpenIndex(const char *fileName, int indexNo,
     /* Copy file header to FileHandle object */
     char *headerPageData;
     headerPageHandle.GetData(headerPageData);
-    memcpy(&(indexHandle.hdr_), headerPageData, sizeof(IX_FileHdr));
+    indexHandle.hdr_ = (IX_FileHdr *) malloc(sizeof(IX_FileHdr));
+    memcpy((char *)indexHandle.hdr_, (char *)headerPageData, sizeof(IX_FileHdr));
 
     indexHandle.PFfileHandle_.UnpinPage(HEADER_PAGENUM);
     indexHandle.valid_ = 1;
     indexHandle.hdrModified_ = 0;
-    indexHandle.keylen_ = indexHandle.hdr_.attrLength + sizeof(RID);
+    indexHandle.keylen_ = indexHandle.hdr_->attrLength + sizeof(RID);
 
     return 0;
 }
@@ -123,7 +124,8 @@ RC IX_Manager::CloseIndex(IX_IndexHandle &indexHandle)
 {
     RC rc;
     if (!indexHandle.valid_) return IX_FILEINVALID;
-    if (indexHandle.scans_ != 0) return IX_SCANOPEN;
+    indexHandle.valid_ = 0;
+
     /* Write index file header if modified */
     if (indexHandle.hdrModified_) {
         PF_PageHandle headerPageHandle;
@@ -133,17 +135,17 @@ RC IX_Manager::CloseIndex(IX_IndexHandle &indexHandle)
         /* Copy file header onto header page */
         char *headerPageData;
         headerPageHandle.GetData(headerPageData);
-        memcpy(headerPageData, &(indexHandle.hdr_), sizeof(IX_FileHdr));
+        memcpy((char *)headerPageData, (char *)indexHandle.hdr_, sizeof(IX_FileHdr));
 
         /* Mark header page as dirty and unpin it */
         indexHandle.PFfileHandle_.MarkDirty(HEADER_PAGENUM);
         indexHandle.PFfileHandle_.UnpinPage(HEADER_PAGENUM);
     }
-
+    free(indexHandle.hdr_);
+    indexHandle.hdr_ = NULL;
     rc = pfm_->CloseFile(indexHandle.PFfileHandle_);
     if (rc) return rc;
     
-    indexHandle.valid_ = 0;
 
     return 0;
 }

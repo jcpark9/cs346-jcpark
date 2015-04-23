@@ -8,10 +8,9 @@ IX_IndexScan::IX_IndexScan()
 
 IX_IndexScan::~IX_IndexScan()
 {
-  if (valid_ && !scanComplete_) {
-    indexHandle_.PFfileHandle_.UnpinPage(currentPage_);
-    free(lastKeySeen_);
-  }
+  indexHandle_.hdr_ = NULL;
+  if (valid_) free(lastKeySeen_);
+  if (valid_ && !scanComplete_) indexHandle_.PFfileHandle_.UnpinPage(currentPage_);
 }
 
 
@@ -29,6 +28,7 @@ RC IX_IndexScan::OpenScan(const IX_IndexHandle &indexHandle,
 
   /* Initialize Scan Parameters */
   indexHandle_ = indexHandle;
+
   compOp_ = compOp;
   value_ = value;
   pinHint_ = pinHint;
@@ -36,9 +36,8 @@ RC IX_IndexScan::OpenScan(const IX_IndexHandle &indexHandle,
   valid_ = 1;
   scanComplete_ = 0;
   currentKeyIndex_ = 0;
-  indexHandle_.scans_++;
 
-  keylen_ = indexHandle_.hdr_.attrLength + sizeof(RID);
+  keylen_ = indexHandle_.hdr_->attrLength + sizeof(RID);
   lastKeySeen_ = (char *)malloc(keylen_);
   firstEntryScanned_ = 0;
 
@@ -90,7 +89,7 @@ RC IX_IndexScan::GetNextEntry(RID &rid)
   /* Pass the rid found when scan condition is met */
   if (ConditionMet(existingKey, (char *)value_)) {
     memcpy(lastKeySeen_, existingKey, keylen_);
-    memcpy(&rid, existingKey + indexHandle_.hdr_.attrLength, sizeof(RID));
+    memcpy(&rid, existingKey + indexHandle_.hdr_->attrLength, sizeof(RID));
 
     PageNum pn;
     SlotNum sn;
@@ -151,9 +150,7 @@ RC IX_IndexScan::CloseScan()
 {
     if (!valid_) return IX_SCANINVALID;
     valid_ = 0;
-    indexHandle_.scans_--;
     free(lastKeySeen_);
-    lastKeySeen_ = NULL;
     if (!scanComplete_) indexHandle_.PFfileHandle_.UnpinPage(currentPage_);
     return 0;
 }
@@ -161,8 +158,8 @@ RC IX_IndexScan::CloseScan()
 /* Returns 1 if scan condition is met, and 0 otherwise. 
  */
 int IX_IndexScan::ConditionMet(char *key1, char *key2) {
-  int attrLength = indexHandle_.hdr_.attrLength;
-  AttrType attrType = indexHandle_.hdr_.attrType;
+  int attrLength = indexHandle_.hdr_->attrLength;
+  AttrType attrType = indexHandle_.hdr_->attrType;
 
   switch(compOp_) {
     case EQ_OP:
@@ -184,7 +181,7 @@ int IX_IndexScan::ConditionMet(char *key1, char *key2) {
  */
 RC IX_IndexScan::InitializeScanPtr() {
   if (compOp_ == NO_OP || compOp_ == LT_OP || compOp_ == LE_OP) {
-    currentPage_ = indexHandle_.hdr_.leftmostLeaf;
+    currentPage_ = indexHandle_.hdr_->leftmostLeaf;
     //std::cout << currentPage_ << std::endl;
     currentKeyIndex_ = 0;
 
@@ -197,8 +194,8 @@ RC IX_IndexScan::InitializeScanPtr() {
     return 0;
   }
 
-  AttrType attrType = indexHandle_.hdr_.attrType;
-  int attrLength = indexHandle_.hdr_.attrLength;
+  AttrType attrType = indexHandle_.hdr_->attrType;
+  int attrLength = indexHandle_.hdr_->attrLength;
   char *keyData = (char *)value_;
 
   /* By setting rid to (1,0), we attempt to find the leftmost (smallest) key with data == value_ */
@@ -209,7 +206,7 @@ RC IX_IndexScan::InitializeScanPtr() {
   memcpy(key + attrLength, &rid, sizeof(RID));
 
   int found; // PageNum of leaf node that would contain key
-  RC rc = TreeSearch(key, indexHandle_.hdr_.rootPage, found);
+  RC rc = TreeSearch(key, indexHandle_.hdr_->rootPage, found);
   if (rc) return rc;
 
   currentPage_ = found;
@@ -228,7 +225,7 @@ RC IX_IndexScan::InitializeScanPtr() {
 /*  std::cout << "RRRRRRRRRRRR" << std::endl;
     for (int i = 0; i < leafHdr->numKeys; i++) {
         char *k = nodeData_ + sizeof(IX_LeafHdr) + i*(keylen_);
-        memcpy(&rid, k + indexHandle_.hdr_.attrLength, sizeof(RID));
+        memcpy(&rid, k + indexHandle_.hdr_->attrLength, sizeof(RID));
         PageNum pn;
         SlotNum sn;
         rid.GetPageNum(pn);
@@ -248,12 +245,11 @@ RC IX_IndexScan::InitializeScanPtr() {
         currentKeyIndex_ = i;
         //std::cout << "INITIAL SCANINDEX FOUND: " << currentKeyIndex_ << std::endl;
         return 0;
-      }
-      /*} else if (compOp_ == EQ_OP && CompareKey(keyData, existingKey, 1, attrType, attrLength) > 0) {
+      } else if (compOp_ == EQ_OP && CompareKey(keyData, existingKey, 1, attrType, attrLength) < 0) {
         rc = indexHandle_.PFfileHandle_.UnpinPage(currentPage_);
         if (rc) return rc;
         return IX_EOF;
-      }*/
+      }
     }
     //std::cout << "NOT FOUND IN THIS PAGE" << std::endl;
     rc = indexHandle_.PFfileHandle_.UnpinPage(currentPage_);
@@ -264,8 +260,8 @@ RC IX_IndexScan::InitializeScanPtr() {
 }
 
 PageNum IX_IndexScan::FindSubtreePtr(char *newKey, IX_NodeHdr *nodeHdr, char *nodeData) {
-  AttrType attrType = indexHandle_.hdr_.attrType;
-  int attrLength = indexHandle_.hdr_.attrLength;
+  AttrType attrType = indexHandle_.hdr_->attrType;
+  int attrLength = indexHandle_.hdr_->attrLength;
 /*
   std::cout << "SPSPSPSPSP" << std::endl;
     for (int i = 0; i < nodeHdr->numKeys; i++) {

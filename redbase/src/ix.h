@@ -13,43 +13,9 @@
 #include "rm_rid.h"  // Please don't change these lines
 #include "pf.h"
 
-struct IX_FileHdr {
-    PageNum rootPage; // PageNum of root page
-    AttrType attrType;
-    int attrLength;
-
-    int maxKeysInternal; // Maximum # of keys that an internal/root node can contain
-    int maxKeysLeaf; // Maximum # of keys that a leaf node can contain
-
-    int numKeys; // Total # of leaf keys (indices) in the tree
-    int leftmostLeaf;
-};
-typedef struct IX_FileHdr IX_FileHdr;
-
-enum NodeType
-{
-  root,internal,leaf
-};
-
-struct IX_NodeHdr {
-    NodeType nodeType;
-    int numKeys; // # of keys currently in the node
-
-  int numChild; // # of children (pointers) in the node
-  /* When node is root/internal, points to page with keys < first key */
-  PageNum firstChild;
-};
-typedef struct IX_NodeHdr IX_NodeHdr;
-
-struct IX_LeafHdr {
-  NodeType nodeType;
-  int numKeys; // # of keys currently in the node
-
-  /* When node is leaf, points to next and previous leaf pages */
-  PageNum next;
-  PageNum prev;
-};
-typedef struct IX_LeafHdr IX_LeafHdr;
+struct IX_FileHdr;
+struct IX_NodeHdr;
+struct IX_LeafHdr;
 
 //
 // IX_IndexHandle: IX Index File interface
@@ -72,9 +38,8 @@ public:
     RC ForcePages();
 
 private:
-    int scans_;
     int valid_;
-    IX_FileHdr hdr_;                                // file header
+    IX_FileHdr *hdr_;                                // file header
     int hdrModified_;                               // dirty flag for file hdr
     PF_FileHandle PFfileHandle_;
     int keylen_;                                    // Length of each key (composed of data and RID) in B+ tree
