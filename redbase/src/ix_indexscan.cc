@@ -65,19 +65,24 @@ RC IX_IndexScan::GetNextEntry(RID &rid)
   } else if (currentKeyIndex_ != 0) {
     IX_LeafHdr *leafHdr = (IX_LeafHdr *) nodeData_;
     char *previousKey = nodeData_ + sizeof(IX_LeafHdr) + keylen_ * (currentKeyIndex_ - 1);
+/*
+    std::cout << "CURR " << currentKeyIndex_ << std::endl;
+    std::cout << "NUM K " << leafHdr->numKeys << std::endl;
+*/  
     if (memcmp(previousKey, lastKeySeen_, keylen_) != 0) currentKeyIndex_--;
-    else if (currentKeyIndex_ == leafHdr->numKeys) {
+    if (currentKeyIndex_ >= leafHdr->numKeys) {
       RC rc = FetchNextPage(nextLeaf_);
       if (rc) return rc;
       currentKeyIndex_ = 0;
     }
+
   }
 
 
   IX_LeafHdr *leafHdr = (IX_LeafHdr *) nodeData_;
 
   char *existingKey = nodeData_ + sizeof(IX_LeafHdr) + keylen_ * currentKeyIndex_;
-  /*if (value_ != NULL) {
+/*  if (value_ != NULL) {
      std::cout << "existingKey_ == " << *((int *)existingKey) << std::endl;
      std::cout << "value_ == " << *((int *)value_) << std::endl;
      std::cout << ConditionMet(existingKey, (char *)value_) << std::endl;
@@ -99,7 +104,7 @@ RC IX_IndexScan::GetNextEntry(RID &rid)
        Move on to next page sincen the current leaf may get deleted. 
      */
     if (leafHdr->numKeys == 1) {
-      std::cout << "NUMKEY == 1  nextLeaf_ == " << nextLeaf_ << std::endl;
+      //std::cout << "NUMKEY == 1  nextLeaf_ == " << nextLeaf_ << std::endl;
       RC rc = FetchNextPage(nextLeaf_);
       //std::cout << "RC == " << rc << std::endl;
       if (rc == IX_EOF) scanComplete_ = 1;
@@ -180,7 +185,7 @@ int IX_IndexScan::ConditionMet(char *key1, char *key2) {
 RC IX_IndexScan::InitializeScanPtr() {
   if (compOp_ == NO_OP || compOp_ == LT_OP || compOp_ == LE_OP) {
     currentPage_ = indexHandle_.hdr_.leftmostLeaf;
-    std::cout << currentPage_ << std::endl;
+    //std::cout << currentPage_ << std::endl;
     currentKeyIndex_ = 0;
 
     PF_PageHandle pageHandle;
@@ -230,8 +235,8 @@ RC IX_IndexScan::InitializeScanPtr() {
         rid.GetSlotNum(sn);
         std::cout << *((int *)k) << "  RID " << pn << ":" << sn << std::endl;
     }
-  std::cout << "RRRRRRRRRRRR" << std::endl;*/
-
+  std::cout << "RRRRRRRRRRRR" << std::endl;
+*/
     for (int i=0; i < leafHdr->numKeys; i++) {
       char *existingKey = nodeData_ + sizeof(IX_LeafHdr) + i * keylen_;
       //std::cout << "KEYDATA " << *((int *)keyData) << std::endl;  
@@ -261,8 +266,8 @@ RC IX_IndexScan::InitializeScanPtr() {
 PageNum IX_IndexScan::FindSubtreePtr(char *newKey, IX_NodeHdr *nodeHdr, char *nodeData) {
   AttrType attrType = indexHandle_.hdr_.attrType;
   int attrLength = indexHandle_.hdr_.attrLength;
-
-/*  std::cout << "SPSPSPSPSP" << std::endl;
+/*
+  std::cout << "SPSPSPSPSP" << std::endl;
     for (int i = 0; i < nodeHdr->numKeys; i++) {
         char *k = nodeData + i*(keylen_ + sizeof(PageNum));
         int subtree;

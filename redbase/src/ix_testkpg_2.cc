@@ -808,6 +808,7 @@ RC DeleteInts(IX_IndexHandle &ih, int lo, int hi, int exLo, int exHi)
    for (i = lo; i <= hi; i++) {
       if ((i < exLo) || (i > exHi)) {
          value = i * 10;
+         cout << "DELETING " << value << endl;
          if ((rc = indScn.OpenScan(ih, EQ_OP, &value)))
             return (rc);
          while ((rc = indScn.GetNextEntry(rid)) != IX_EOF) {
@@ -1133,39 +1134,39 @@ RC Test1(void)
       cout << "CloseIndex";
    }
 
-   // NEW FOR VERSION 3
-   // Some Index Scan Tests
-   // Supporting Index Handle does not have an open file
+//    // NEW FOR VERSION 3
+//    // Some Index Scan Tests
+//    // Supporting Index Handle does not have an open file
    int isVal = 3;
    RID isRid(5,3);
    IX_IndexScan is1;
    /*
-   printf("\n *** Illegal Index Scan (file not open): %s\n",
-         ((rc = is1.OpenScan(ihBAD1, EQ_OP, &isVal))
-          ? "PASS" : "FAIL\a"));
-   if (rc) { 
-      PrintError(rc);
-   } else {
-      cout << "Suggestion: Make sure that IndexHandle that supports the\n";
-      cout << "Index Scan has an open file. This should be a similar check\n";
-      cout << "to that performed during InsertEntry and DeleteEntry\n";
-   }
-*/
+//    printf("\n *** Illegal Index Scan (file not open): %s\n",
+//          ((rc = is1.OpenScan(ihBAD1, EQ_OP, &isVal))
+//           ? "PASS" : "FAIL\a"));
+//    if (rc) { 
+//       PrintError(rc);
+//    } else {
+//       cout << "Suggestion: Make sure that IndexHandle that supports the\n";
+//       cout << "Index Scan has an open file. This should be a similar check\n";
+//       cout << "to that performed during InsertEntry and DeleteEntry\n";
+//    }
+// */
 
-   /*
-   // Index scan called on a NULL value
-   IX_IndexScan is2;
-   printf("\n *** Illegal Index Scan (NULL value): %s\n",
-         ((rc = is2.OpenScan(ihOK1, EQ_OP, NULL))
-          ? "PASS" : "FAIL\a"));
-   if (rc) { 
-      PrintError(rc);
-   } else {
-      cout << "Suggestion: Make sure you check for NULL value.\n";
-   }
-*/
-/*   Validation tests courtesy of Dallan
-   Inserting and validating INTS*/
+//    /*
+//    // Index scan called on a NULL value
+//    IX_IndexScan is2;
+//    printf("\n *** Illegal Index Scan (NULL value): %s\n",
+//          ((rc = is2.OpenScan(ihOK1, EQ_OP, NULL))
+//           ? "PASS" : "FAIL\a"));
+//    if (rc) { 
+//       PrintError(rc);
+//    } else {
+//       cout << "Suggestion: Make sure you check for NULL value.\n";
+//    }
+// */
+// /*   Validation tests courtesy of Dallan
+//    Inserting and validating INTS*/
    printf("\n *** Dallan's Insertion and Validation Test (INT): %s\n",
          ((rc = ixm.CreateIndex(FILENAME, OK5, INT, sizeof(int))) ||
           (rc = ixm.OpenIndex(FILENAME, OK5, ihOK5)) ||
@@ -1323,7 +1324,7 @@ RC Test1(void)
    }
 
 
-   // Scan and delete
+//    // Scan and delete
 
    int value, i, j;
    RID rid;
@@ -1409,192 +1410,192 @@ end:
 //     ************************************************/
 
 
-//    cout << "\n\n** Congratulations if you have made it this far \n";
-//    cout << "only one test left - THE ACCORDIAN ... Good Luck !!!\n"  << endl;
+   cout << "\n\n** Congratulations if you have made it this far \n";
+   cout << "only one test left - THE ACCORDIAN ... Good Luck !!!\n"  << endl;
 
 
-//    if ((rc = ixm.CreateIndex(FILENAME, OK5, INT, sizeof(int))) ||
-//          (rc = ixm.OpenIndex(FILENAME, OK5, ihOK5))) {
-//       PrintError(rc);
-//       goto oops;
-//    }
+   if ((rc = ixm.CreateIndex(FILENAME, OK5, INT, sizeof(int))) ||
+         (rc = ixm.OpenIndex(FILENAME, OK5, ihOK5))) {
+      PrintError(rc);
+      goto oops;
+   }
 
 
-//    // Subtest 1: add 50 of values 1 - 50
-//    if ((rc = InsertInts(ihOK5, 50, 1, 50, 0, 0))) goto oops;
-//    count = 0;
-//    for (i = 1; i <= 50; i++) {
-//       value = i * 10;
-//       if ((rc = indScn.OpenScan(ihOK5, EQ_OP, &value)))
-//          goto oops;
-//       while ((rc = indScn.GetNextEntry(rid)) != IX_EOF) {
-//          if ((value < 10) || (value > 500)) {
-//             cout << "Unexpected entry found\n" << endl;
-//             goto oops;
-//          }
-//          count++;
-//       }
-//       if ((rc = indScn.CloseScan()))
-//          goto oops;
-//    }
-//    printf("\n\nAdd 50 of vals 1-50 : %s\n", 
-//          ((count == 2500) ? "PASS" : "FAIL\n"));  
+   // Subtest 1: add 50 of values 1 - 50
+   if ((rc = InsertInts(ihOK5, 50, 1, 50, 0, 0))) goto oops;
+   count = 0;
+   for (i = 1; i <= 50; i++) {
+      value = i * 10;
+      if ((rc = indScn.OpenScan(ihOK5, EQ_OP, &value)))
+         goto oops;
+      while ((rc = indScn.GetNextEntry(rid)) != IX_EOF) {
+         if ((value < 10) || (value > 500)) {
+            cout << "Unexpected entry found\n" << endl;
+            goto oops;
+         }
+         count++;
+      }
+      if ((rc = indScn.CloseScan()))
+         goto oops;
+   }
+   printf("\n\nAdd 50 of vals 1-50 : %s\n", 
+         ((count == 2500) ? "PASS" : "FAIL\n"));  
 
 
-//    // Subtest 2: delete all values except val = 5
-//    if ((rc = DeleteInts(ihOK5, 1, 50, 5, 5))) goto oops;
-//    printf("\nDeleteInts passed\n");
-//    count = 0;
-//    for (i = 1; i <= 50; i++) {
-//       value = i * 10;
-//       if ((rc = indScn.OpenScan(ihOK5, EQ_OP, &value)))
-//          goto oops;
-//       while ((rc = indScn.GetNextEntry(rid)) != IX_EOF) {
-//          if ((value < 50) || (value > 50)) {
-//             cout << "Unexpected entry found\n" << endl;
-//             goto oops;
-//          }
-//          count++;
-//       }
-//       if ((rc = indScn.CloseScan()))
-//          goto oops;
-//    }
-//    printf("\n\nDel 50 all vals except 5 : %s\n", 
-//          ((count == 50) ? "PASS" : "FAIL\n"));  
+   // Subtest 2: delete all values except val = 5
+   if ((rc = DeleteInts(ihOK5, 1, 50, 5, 5))) goto oops;
+   printf("\nDeleteInts passed\n");
+   count = 0;
+   for (i = 1; i <= 50; i++) {
+      value = i * 10;
+      if ((rc = indScn.OpenScan(ihOK5, EQ_OP, &value)))
+         goto oops;
+      while ((rc = indScn.GetNextEntry(rid)) != IX_EOF) {
+         if ((value < 50) || (value > 50)) {
+            cout << "Unexpected entry found\n" << endl;
+            goto oops;
+         }
+         count++;
+      }
+      if ((rc = indScn.CloseScan()))
+         goto oops;
+   }
+   printf("\n\nDel 50 all vals except 5 : %s\n", 
+         ((count == 50) ? "PASS" : "FAIL\n"));  
 
 
-//    // Subtest 3: Add 50 values 1-50 (except val = 5)
-//    if ((rc = InsertInts(ihOK5, 50, 1, 50, 5, 5))) goto oops;
-//    count = 0;
-//    for (i = 1; i <= 50; i++) {
-//       value = i * 10;
-//       if ((rc = indScn.OpenScan(ihOK5, EQ_OP, &value)))
-//          goto oops;
-//       while ((rc = indScn.GetNextEntry(rid)) != IX_EOF) {
-//          if ((value < 10) || (value > 500)) {
-//             cout << "Unexpected entry found\n" << endl;
-//             goto oops;
-//          }
-//          count++;
-//       }
-//       if ((rc = indScn.CloseScan()))
-//          goto oops;
-//    }
-//    printf("\n\nAdd 50 of vals 1-50 (exc val = 5): %s\n", 
-//          ((count == 2500) ? "PASS" : "FAIL\n"));  
+   // Subtest 3: Add 50 values 1-50 (except val = 5)
+   if ((rc = InsertInts(ihOK5, 50, 1, 50, 5, 5))) goto oops;
+   count = 0;
+   for (i = 1; i <= 50; i++) {
+      value = i * 10;
+      if ((rc = indScn.OpenScan(ihOK5, EQ_OP, &value)))
+         goto oops;
+      while ((rc = indScn.GetNextEntry(rid)) != IX_EOF) {
+         if ((value < 10) || (value > 500)) {
+            cout << "Unexpected entry found\n" << endl;
+            goto oops;
+         }
+         count++;
+      }
+      if ((rc = indScn.CloseScan()))
+         goto oops;
+   }
+   printf("\n\nAdd 50 of vals 1-50 (exc val = 5): %s\n", 
+         ((count == 2500) ? "PASS" : "FAIL\n"));  
 
 
-//    // Subtest 4: Del all (except val = 5-6)
-//    if ((rc = DeleteInts(ihOK5, 1, 50, 5, 6))) goto oops;
-//    count = 0;
-//    for (i = 1; i <= 50; i++) {
-//       value = i * 10;
-//       if ((rc = indScn.OpenScan(ihOK5, EQ_OP, &value)))
-//          goto oops;
-//       while ((rc = indScn.GetNextEntry(rid)) != IX_EOF) {
-//          if ((value < 50) || (value > 60)) {
-//             cout << "Unexpected entry found\n" << endl;
-//             goto oops;
-//          }
-//          count++;
-//       }
-//       if ((rc = indScn.CloseScan()))
-//          goto oops;
-//    }
-//    printf("\n\nDel 50 all vals except 5-6 : %s\n", 
-//          ((count == 100) ? "PASS" : "FAIL\n"));  
+   // Subtest 4: Del all (except val = 5-6)
+   if ((rc = DeleteInts(ihOK5, 1, 50, 5, 6))) goto oops;
+   count = 0;
+   for (i = 1; i <= 50; i++) {
+      value = i * 10;
+      if ((rc = indScn.OpenScan(ihOK5, EQ_OP, &value)))
+         goto oops;
+      while ((rc = indScn.GetNextEntry(rid)) != IX_EOF) {
+         if ((value < 50) || (value > 60)) {
+            cout << "Unexpected entry found\n" << endl;
+            goto oops;
+         }
+         count++;
+      }
+      if ((rc = indScn.CloseScan()))
+         goto oops;
+   }
+   printf("\n\nDel 50 all vals except 5-6 : %s\n", 
+         ((count == 100) ? "PASS" : "FAIL\n"));  
 
 
 
-//    // Subtest 5: Add 50 values (except val = 5-6) 
-//    if ((rc = InsertInts(ihOK5, 50, 1, 50, 5, 6))) goto oops;
-//    count = 0;
-//    for (i = 1; i <= 50; i++) {
-//       value = i * 10;
-//       if ((rc = indScn.OpenScan(ihOK5, EQ_OP, &value)))
-//          goto oops;
-//       while ((rc = indScn.GetNextEntry(rid)) != IX_EOF) {
-//          if ((value < 10) || (value > 500)) {
-//             cout << "Unexpected entry found\n" << endl;
-//             goto oops;
-//          }
-//          count++;
-//       }
-//       if ((rc = indScn.CloseScan()))
-//          goto oops;
-//    }
-//    printf("\n\nAdd 50 of vals 1-50 (exc val = 5-6): %s\n", 
-//          ((count == 2500) ? "PASS" : "FAIL\n"));  
+   // Subtest 5: Add 50 values (except val = 5-6) 
+   if ((rc = InsertInts(ihOK5, 50, 1, 50, 5, 6))) goto oops;
+   count = 0;
+   for (i = 1; i <= 50; i++) {
+      value = i * 10;
+      if ((rc = indScn.OpenScan(ihOK5, EQ_OP, &value)))
+         goto oops;
+      while ((rc = indScn.GetNextEntry(rid)) != IX_EOF) {
+         if ((value < 10) || (value > 500)) {
+            cout << "Unexpected entry found\n" << endl;
+            goto oops;
+         }
+         count++;
+      }
+      if ((rc = indScn.CloseScan()))
+         goto oops;
+   }
+   printf("\n\nAdd 50 of vals 1-50 (exc val = 5-6): %s\n", 
+         ((count == 2500) ? "PASS" : "FAIL\n"));  
 
 
-//    // Subtest 5: Del all (except val = 5-7)
-//    if ((rc = DeleteInts(ihOK5, 1, 50, 5, 7))) goto oops;
-//    count = 0;
-//    for (i = 1; i <= 50; i++) {
-//       value = i * 10;
-//       if ((rc = indScn.OpenScan(ihOK5, EQ_OP, &value)))
-//          goto oops;
-//       while ((rc = indScn.GetNextEntry(rid)) != IX_EOF) {
-//          if ((value < 50) || (value > 70)) {
-//             cout << "Unexpected entry found\n" << endl;
-//             goto oops;
-//          }
-//          count++;
-//       }
-//       if ((rc = indScn.CloseScan()))
-//          goto oops;
-//    }
-//    printf("\n\nDel 50 all vals except 5-7 : %s\n", 
-//          ((count == 150) ? "PASS" : "FAIL\n"));  
+   // Subtest 5: Del all (except val = 5-7)
+   if ((rc = DeleteInts(ihOK5, 1, 50, 5, 7))) goto oops;
+   count = 0;
+   for (i = 1; i <= 50; i++) {
+      value = i * 10;
+      if ((rc = indScn.OpenScan(ihOK5, EQ_OP, &value)))
+         goto oops;
+      while ((rc = indScn.GetNextEntry(rid)) != IX_EOF) {
+         if ((value < 50) || (value > 70)) {
+            cout << "Unexpected entry found\n" << endl;
+            goto oops;
+         }
+         count++;
+      }
+      if ((rc = indScn.CloseScan()))
+         goto oops;
+   }
+   printf("\n\nDel 50 all vals except 5-7 : %s\n", 
+         ((count == 150) ? "PASS" : "FAIL\n"));  
 
 
-//    // Subtest add 50 values (exc val = 5-7)
-//    if ((rc = InsertInts(ihOK5, 50, 1, 50, 5, 7))) goto oops;
-//    count = 0;
-//    for (i = 1; i <= 50; i++) {
-//       value = i * 10;
-//       if ((rc = indScn.OpenScan(ihOK5, EQ_OP, &value)))
-//          goto oops;
-//       while ((rc = indScn.GetNextEntry(rid)) != IX_EOF) {
-//          if ((value < 10) || (value > 500)) {
-//             cout << "Unexpected entry found\n" << endl;
-//             goto oops;
-//          }
-//          count++;
-//       }
-//       if ((rc = indScn.CloseScan()))
-//          goto oops;
-//    }
-//    printf("\n\nAdd 50 of vals 1-50 (exc val = 5 - 7): %s\n", 
-//          ((count == 2500) ? "PASS" : "FAIL\n"));  
+   // Subtest add 50 values (exc val = 5-7)
+   if ((rc = InsertInts(ihOK5, 50, 1, 50, 5, 7))) goto oops;
+   count = 0;
+   for (i = 1; i <= 50; i++) {
+      value = i * 10;
+      if ((rc = indScn.OpenScan(ihOK5, EQ_OP, &value)))
+         goto oops;
+      while ((rc = indScn.GetNextEntry(rid)) != IX_EOF) {
+         if ((value < 10) || (value > 500)) {
+            cout << "Unexpected entry found\n" << endl;
+            goto oops;
+         }
+         count++;
+      }
+      if ((rc = indScn.CloseScan()))
+         goto oops;
+   }
+   printf("\n\nAdd 50 of vals 1-50 (exc val = 5 - 7): %s\n", 
+         ((count == 2500) ? "PASS" : "FAIL\n"));  
 
 
-//    // Subtest 5: Del all (except val = 5-8)
-//    if ((rc = DeleteInts(ihOK5, 1, 50, 5, 8))) goto oops;
+   // Subtest 5: Del all (except val = 5-8)
+   if ((rc = DeleteInts(ihOK5, 1, 50, 5, 8))) goto oops;
 
-//    count = 0;
-//    for (i = 1; i <= 50; i++) {
-//       value = i * 10;
-//       if ((rc = indScn.OpenScan(ihOK5, EQ_OP, &value)))
-//          goto oops;
-//       while ((rc = indScn.GetNextEntry(rid)) != IX_EOF) {
-//          if ((value < 50) || (value > 80)) {
-//             cout << "Unexpected entry found\n" << endl;
-//             goto oops;
-//          }
-//          count++;
-//       }
-//       if ((rc = indScn.CloseScan()))
-//          goto oops;
-//    }
+   count = 0;
+   for (i = 1; i <= 50; i++) {
+      value = i * 10;
+      if ((rc = indScn.OpenScan(ihOK5, EQ_OP, &value)))
+         goto oops;
+      while ((rc = indScn.GetNextEntry(rid)) != IX_EOF) {
+         if ((value < 50) || (value > 80)) {
+            cout << "Unexpected entry found\n" << endl;
+            goto oops;
+         }
+         count++;
+      }
+      if ((rc = indScn.CloseScan()))
+         goto oops;
+   }
 
-// oops:
-//    printf("\n\nTHE ACCORDIAN : %s\n", ((count == 200) ? "PASS" : "FAIL\n"));  
-//    if (rc) PrintError(rc);
+oops:
+   printf("\n\nTHE ACCORDIAN : %s\n", ((count == 200) ? "PASS" : "FAIL\n"));  
+   if (rc) PrintError(rc);
 
-//    if ((rc = ixm.CloseIndex(ihOK5))) {
-//       PrintError(rc);
-//    }
+   if ((rc = ixm.CloseIndex(ihOK5))) {
+      PrintError(rc);
+   }
 
    return (0);
 }

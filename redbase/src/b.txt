@@ -1,0 +1,380 @@
+Starting IX component test.
+
+** Beginning Test
+ *** Illegal Index Create Test (Negative indexNo): PASS
+
+ *** Illegal Index Create Test (Nonexisting Filename): PASS
+
+ *** Illegal Index Create Test (Bad INT length): PASS
+
+ *** Illegal Index Create Test (Bad FLOAT length): PASS
+
+ *** Illegal Index Create Test (Bad STRING length): PASS
+
+ *** Illegal Index Create Test (Bad STRING length): PASS
+
+ *** Illegal Index Create Test (Bad Type): PASS
+
+ *** Legal Index Create Test: PASS
+
+ *** Legal Index Create Test: PASS
+
+ *** Illegal Index Destroy Test (Nonexisting fileName): PASS
+
+ *** Illegal Index Destroy Test (Negative indexNo): PASS
+
+ *** Illegal Index Destroy Test (Uncreated Index): PASS
+
+ *** Legal Index Destroy Test: PASS
+
+ *** Legal Index Destroy Test: PASS
+
+ *** Legal Index Create Test: PASS
+
+ *** Legal Index Create Test: PASS
+
+ *** Illegal Index Open Test (Nonexisting fileName): PASS
+
+ *** Illegal Index Open Test (Nonexisting index name): PASS
+
+ *** Legal Index Open Test: PASS
+
+ *** Legal Index Open Test: PASS
+
+ *** Illegal Index Open Test (One handle - two indexes): PASS
+
+ *** Illegal Index Close Test (handle w/out index): PASS
+
+ *** Legal Index Close Test: PASS
+
+ *** Illegal Index Close Test (second close): PASS
+             adding 1000 int entries
+	20%    	40%    	60%    	80%    	100%    	100%      
+Verifying index contents
+-------------------------------1000
+Verifying index contents
+-------------------------------1000
+
+ *** Dallan's Insertion and Validation Test (INT): PASS
+
+ *** Destroying Index Test (INT): PASS
+             adding 1000 string entries
+	20%    	40%    	60%    	80%    	100%    	100%      
+Verifying index contents
+Verifying index contents
+
+ *** Insertion and Validation Test (STRING): PASS
+
+ *** Destroying Index Test (STRING): PASS
+             adding 1000 float entries
+	20%    	40%    	60%    	80%    	100%    	100%      
+Verifying index contents
+Verifying index contents
+
+ *** Insertion and Validation Test (FLOAT): PASS
+
+ *** Destroying Index Test (FLOAT): PASS
+             adding 1000 int entries
+	20%    	40%    	60%    	80%    	100%    	100%      
+        deleting 990 int entries
+	20%      	40%      	60%      	80%      	100%      
+Verifying index contents
+-------------------------------0
+Verifying index contents
+-------------------------------0
+
+ *** Dallan's Validation Test with Deletion(INT): PASS
+
+ *** Destroying Index Test (INT): PASS
+             adding 1000 float entries
+	20%    	40%    	60%    	80%    	100%    	100%      
+        deleting 990 float entries
+	20%      	40%      	60%      	80%      	100%      
+Verifying index contents
+Verifying index contents
+
+ *** Validation Test with Deletion(FLOAT): PASS
+
+ *** Destroying Index Test (FLOAT): PASS
+             adding 1000 string entries
+	20%    	40%    	60%    	80%    	100%    	100%      
+             deleting 990 string entries
+	20%    	40%    	60%    	80%    	100%      
+Verifying index contents
+Verifying index contents
+
+ *** Validation Test with Deletion(STRING): PASS
+
+ *** Destroying Index Test (STRING): PASS
+
+Starting scan and delete by inserting 50 values of 50 ints
+-----------
+2500
+-----------
+Deleting all of the indices for half of the values
+-----------
+0
+-----------
+Verifying count of remaining values
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+1250
+Scan and Delete Test PASS
+
+
+** Congratulations if you have made it this far 
+only one test left - THE ACCORDIAN ... Good Luck !!!
+
+Inserted 2500 values
+
+
+
+Add 50 of vals 1-50 : PASS
+DELETING 10
+DELETING 20
+DELETING 30
+DELETING 40
+DELETING 60
+DELETING 70
+DELETING 80
+DELETING 90
+DELETING 100
+DELETING 110
+DELETING 120
+DELETING 130
+DELETING 140
+DELETING 150
+DELETING 160
+DELETING 170
+DELETING 180
+DELETING 190
+DELETING 200
+DELETING 210
+DELETING 220
+DELETING 230
+DELETING 240
+DELETING 250
+DELETING 260
+DELETING 270
+DELETING 280
+DELETING 290
+DELETING 300
+DELETING 310
+DELETING 320
+DELETING 330
+DELETING 340
+DELETING 350
+DELETING 360
+DELETING 370
+DELETING 380
+DELETING 390
+DELETING 400
+DELETING 410
+DELETING 420
+DELETING 430
+DELETING 440
+DELETING 450
+DELETING 460
+DELETING 470
+DELETING 480
+DELETING 490
+DELETING 500
+Deleted 2450 entries
+
+DeleteInts passed
+
+
+Del 50 all vals except 5 : PASS
+Inserted 2450 values
+
+
+
+Add 50 of vals 1-50 (exc val = 5): PASS
+DELETING 10
+DELETING 20
+DELETING 30
+DELETING 40
+DELETING 70
+DELETING 80
+DELETING 90
+DELETING 100
+DELETING 110
+DELETING 120
+DELETING 130
+DELETING 140
+DELETING 150
+DELETING 160
+DELETING 170
+DELETING 180
+DELETING 190
+DELETING 200
+DELETING 210
+DELETING 220
+DELETING 230
+DELETING 240
+DELETING 250
+DELETING 260
+DELETING 270
+DELETING 280
+DELETING 290
+DELETING 300
+DELETING 310
+DELETING 320
+DELETING 330
+DELETING 340
+DELETING 350
+DELETING 360
+DELETING 370
+DELETING 380
+DELETING 390
+DELETING 400
+DELETING 410
+DELETING 420
+DELETING 430
+DELETING 440
+DELETING 450
+DELETING 460
+DELETING 470
+DELETING 480
+DELETING 490
+DELETING 500
+Deleted 2400 entries
+
+
+Del 50 all vals except 5-6 : PASS
+Inserted 2400 values
+
+
+
+Add 50 of vals 1-50 (exc val = 5-6): PASS
+DELETING 10
+DELETING 20
+DELETING 30
+DELETING 40
+DELETING 80
+DELETING 90
+DELETING 100
+DELETING 110
+DELETING 120
+DELETING 130
+DELETING 140
+DELETING 150
+DELETING 160
+DELETING 170
+DELETING 180
+DELETING 190
+DELETING 200
+DELETING 210
+DELETING 220
+DELETING 230
+DELETING 240
+DELETING 250
+DELETING 260
+DELETING 270
+DELETING 280
+DELETING 290
+DELETING 300
+DELETING 310
+DELETING 320
+DELETING 330
+DELETING 340
+DELETING 350
+DELETING 360
+DELETING 370
+DELETING 380
+DELETING 390
+DELETING 400
+DELETING 410
+DELETING 420
+DELETING 430
+DELETING 440
+DELETING 450
+DELETING 460
+DELETING 470
+DELETING 480
+DELETING 490
+DELETING 500
+Deleted 2350 entries
+
+
+Del 50 all vals except 5-7 : PASS
+Inserted 2350 values
+
+
+
+Add 50 of vals 1-50 (exc val = 5 - 7): PASS
+DELETING 10
+DELETING 20
+DELETING 30
+DELETING 40
+DELETING 90
+DELETING 100
+DELETING 110
+DELETING 120
+DELETING 130
+DELETING 140
+DELETING 150
+DELETING 160
+DELETING 170
+DELETING 180
+DELETING 190
+DELETING 200
+DELETING 210
+DELETING 220
+DELETING 230
+DELETING 240
+DELETING 250
+DELETING 260
+DELETING 270
+DELETING 280
+DELETING 290
+DELETING 300
+DELETING 310
+DELETING 320
+DELETING 330
+DELETING 340
+DELETING 350
+DELETING 360
+DELETING 370
+DELETING 380
+DELETING 390
+DELETING 400
+DELETING 410
+DELETING 420
+DELETING 430
+DELETING 440
+DELETING 450
+DELETING 460
+DELETING 470
+DELETING 480
+DELETING 490
+DELETING 500
+Deleted 2300 entries
+
+
+THE ACCORDIAN : PASS
+Ending IX component test.
+
