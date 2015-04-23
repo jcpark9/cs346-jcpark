@@ -54,6 +54,7 @@ RC RM_FileHandle::InsertRec(const char *pData, RID &rid)
 {
     RC rc;
     if (!valid_) return RM_FILEINVALID;
+    if (pData == NULL) return RM_DATANULL;
 
     PageNum pageNum;
     SlotNum slotNum;

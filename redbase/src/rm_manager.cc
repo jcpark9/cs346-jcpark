@@ -13,6 +13,7 @@ RM_Manager::~RM_Manager() { }
 RC RM_Manager::CreateFile(const char *fileName, int recordSize)
 {
     if (recordSize <=0 || recordSize >= PF_PAGE_SIZE) return RM_RECSZINVALID;
+    if (fileName == NULL) return RM_FILENAMENULL;
 
     RC rc = pfmanager_->CreateFile(fileName);
     if (rc) return rc;
@@ -55,12 +56,14 @@ RC RM_Manager::CreateFile(const char *fileName, int recordSize)
 
 RC RM_Manager::DestroyFile(const char *fileName)
 {
+    if (fileName == NULL) return RM_FILENAMENULL;
     return pfmanager_->DestroyFile(fileName);
 }
 
 
 RC RM_Manager::OpenFile(const char *fileName, RM_FileHandle &fileHandle)
 {
+    if (fileName == NULL) return RM_FILENAMENULL;
     RC rc = pfmanager_->OpenFile(fileName, fileHandle.PFfileHandle_);
     if (rc) return rc;
 

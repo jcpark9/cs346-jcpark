@@ -10,18 +10,17 @@ using namespace std;
 // Error table
 //
 static char *IX_WarnMsg[] = {
-  (char*)"record ID is not initialized",
-  (char*)"record size is not valid",
-  (char*)"record is not initialized",
-  (char*)"filehandle is not initialized",
-  (char*)"record does not exist",
-  (char*)"filescan is not initialized",
-  (char*)"no more records found for file scan",
-  (char*)"parameters for file scan are invalid",
-  (char*)"file scan is still open. close before opening again."
+  (char*)"parameters for index creation are invalid",
+  (char*)"filename provided is null",
+  (char*)"indexhandle object is not initialized",
+  (char*)"provided pData is null",
+  (char*)"indexscan object is not initialized",
+  (char*)"no more indices found for index scan",
+  (char*)"parameters for index scan are invalid",
+  (char*)"index scan is still open. close before opening again.",
+  (char*)"record couldn't be found for deletion.",
+  (char*)"duplicate index entry exists"
 };
-
-
 
 static char *IX_ErrorMsg[] = {
 

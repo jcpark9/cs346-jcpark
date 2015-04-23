@@ -13,10 +13,51 @@
 #include "rm_rid.h"  // Please don't change these lines
 #include "pf.h"
 
+struct IX_FileHdr {
+    PageNum rootPage; // PageNum of root page
+    AttrType attrType;
+    int attrLength;
+
+    int maxKeysInternal; // Maximum # of keys that an internal/root node can contain
+    int maxKeysLeaf; // Maximum # of keys that a leaf node can contain
+
+    int numKeys; // Total # of leaf keys (indices) in the tree
+    int leftmostLeaf;
+};
+typedef struct IX_FileHdr IX_FileHdr;
+
+enum NodeType
+{
+  root,internal,leaf
+};
+
+struct IX_NodeHdr {
+    NodeType nodeType;
+    int numKeys; // # of keys currently in the node
+
+  int numChild; // # of children (pointers) in the node
+  /* When node is root/internal, points to page with keys < first key */
+  PageNum firstChild;
+};
+typedef struct IX_NodeHdr IX_NodeHdr;
+
+struct IX_LeafHdr {
+  NodeType nodeType;
+  int numKeys; // # of keys currently in the node
+
+  /* When node is leaf, points to next and previous leaf pages */
+  PageNum next;
+  PageNum prev;
+};
+typedef struct IX_LeafHdr IX_LeafHdr;
+
 //
 // IX_IndexHandle: IX Index File interface
 //
 class IX_IndexHandle {
+    friend class IX_Manager;
+    friend class IX_IndexScan;
+
 public:
     IX_IndexHandle();
     ~IX_IndexHandle();
@@ -31,11 +72,35 @@ public:
     RC ForcePages();
 
 private:
+    int scans_;
     int valid_;
     IX_FileHdr hdr_;                                // file header
     int hdrModified_;                               // dirty flag for file hdr
     PF_FileHandle PFfileHandle_;
-    int keylen_;
+    int keylen_;                                    // Length of each key (composed of data and RID) in B+ tree
+
+
+    /* Helper functions */
+    PageNum FindSubtreePtr(char *newKey, IX_NodeHdr *nodeHdr, char *nodeData, int &keyIndex);
+    void WriteKey(char *pos, char *key);
+    char* GetNthKeyInternal(char *nodeData, int keyIndex);
+    char* GetNthKeyLeaf(char *nodeData, int keyIndex);
+
+    /* Insert functions */
+    RC InitializeFirstLeaf(PageNum &newLeafPageNum);
+    RC InsertEntryToNode(char *key, PageNum currentNode, PageNum &newChild, char *newChildData);
+    RC InsertEntryToNonLeaf(PageNum &newChild, char *newChildData, IX_NodeHdr *nodeHdr, char *nodeData, int keyIndex);
+    void InsertEntryToNonLeafHelper(PageNum ptr, char *key, IX_NodeHdr *nodeHdr, char *nodeData, int keyIndex);
+    RC InsertEntryToLeaf(char *newKey, IX_LeafHdr *leafHdr, char *leafData, PageNum &newChild, char *newChildData, PageNum currentPage);
+    RC InsertEntryToLeafHelper(char *newKey, IX_LeafHdr *leafHdr, char *leafData);
+    RC AllocateNewRoot(PageNum secondChild, char *secondChildKey);
+
+    /* Delete functions */
+    RC DeleteEntryFromNode(char *key, PageNum currentNode, int &childDeleted);
+    void DeleteEntryFromNonLeaf(IX_NodeHdr *nodeHdr, char *nodeData, int keyIndex);
+    RC DeleteEntryFromLeaf(char *deletedKey, IX_LeafHdr *leafHdr, char *leafData);
+    RC AdjustSiblingPointers(IX_LeafHdr *leafHdr);
+
 };
 
 //
@@ -60,21 +125,28 @@ public:
     RC CloseScan();
 
 private:
-    IX_FileHandle indexHandle_;
+    IX_IndexHandle indexHandle_;
     CompOp compOp_;
     void *value_;
     ClientHint pinHint_;
 
     int valid_;
-    int currentPage_;
-    int currentKeyOffset_;
-
-    PF_PageHandle pageHandle_;
-    char *pageData_;
-
-    RC FetchNextPage();
-    int ConditionMet(char *keyData);
     int scanComplete_;
+
+    int currentPage_;
+    int currentKeyIndex_;
+    char *nodeData_;
+    int keylen_;
+
+    char *lastKeySeen_;
+    int nextLeaf_;
+    int firstEntryScanned_;
+    
+    RC FetchNextPage(PageNum next);
+    int ConditionMet(char *key1, char *key2);
+    RC InitializeScanPtr();
+    RC TreeSearch(char *key, PageNum current, PageNum &found);
+    PageNum FindSubtreePtr(char *newKey, IX_NodeHdr *nodeHdr, char *nodeData);
 };
 
 //
@@ -100,27 +172,26 @@ public:
     RC CloseIndex(IX_IndexHandle &indexHandle);
 
 private:
-    PF_Manager pfm_;
+    PF_Manager *pfm_;
 };
 
 //
 // Print-error function
 //
 void IX_PrintError(RC rc);
-
-#define IX_CREATEPARAMINVALID    (START_IX_WARN + 0) // record size too big or small
-#define IX_            (START_IX_WARN + 1) // record object invalid 
+#define IX_CREATEPARAMINVALID    (START_IX_WARN + 0) // parameters for index creation are invalid
+#define IX_FILENAMENULL          (START_IX_WARN + 1) // filename provided is null
 #define IX_FILEINVALID           (START_IX_WARN + 2) // index file handle object invalid
-#define IX_           (START_IX_WARN + 3) // record does not exist
-#define IX_SCANINVALID           (START_IX_WARN + 4) // file scan object invalid
-#define IX_EOF                   (START_IX_WARN + 5) // no more records to be scanned
+#define IX_NULLDATA              (START_IX_WARN + 3) // pData pointer is NULL
+#define IX_SCANINVALID           (START_IX_WARN + 4) // index scan object invalid
+#define IX_EOF                   (START_IX_WARN + 5) // no more indices to be scanned
 #define IX_SCANPARAMINVALID      (START_IX_WARN + 6) // parameters for scanning are invalid
-#define IX_SCANOPEN              (START_IX_WARN + 7) // file scan is still open
+#define IX_SCANOPEN              (START_IX_WARN + 7) // index scan is still open
+#define IX_ENTRYNOTFOUND           (START_IX_WARN + 8) // record couldn't be found for deletion
+#define IX_DUPLICATEENTRY        (START_IX_WARN + 9) // there is a duplicate entry
 
-#define IX_LASTWARN        RM_SCANPARAMINVALID
+#define IX_LASTWARN        IX_DUPLICATEENTRY
 
-#define IX_LASTERROR       (END_RM_ERR)
+#define IX_LASTERROR       (END_IX_ERR)
 
-
-IX_CREATEPARAMINVALID
 #endif

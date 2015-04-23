@@ -1,5 +1,5 @@
 //
-// File:        ix_testshell.cc
+// File:        ix_test_withoutRM.cc
 // Description: Test IX component
 // Authors:     Jan Jannink
 //              Dallan Quass (quass@cs.stanford.edu)
@@ -10,9 +10,9 @@
 // expected to devise your own tests to test your code.
 //
 // 1997:  Tester has been modified to reflect the change in the 1997
-// interface.
-// 2000:  Tester has been modified to reflect the change in the 2000
-// interface.
+// interface.  
+// 2001: All use of RM component has been removed. It is otherwise 
+//    same as the given ix_test.cc file.
 
 #include <cstdio>
 #include <iostream>
@@ -22,10 +22,7 @@
 
 #include "redbase.h"
 #include "pf.h"
-#include "rm.h"
 #include "ix.h"
-
-using namespace std;
 
 //
 // Defines
@@ -33,7 +30,7 @@ using namespace std;
 #define FILENAME     "testrel"        // test file name
 #define BADFILE      "/abc/def/xyz"   // bad file name
 #define STRLEN       39               // length of strings to index
-#define FEW_ENTRIES  20
+#define FEW_ENTRIES  20    
 #define MANY_ENTRIES 1000
 #define NENTRIES     5000             // Size of values array
 #define PROG_UNIT    200              // how frequently to give progress
@@ -48,7 +45,6 @@ int values[NENTRIES];
 // Global component manager variables
 //
 PF_Manager pfm;
-RM_Manager rmm(pfm);
 IX_Manager ixm(pfm);
 
 //
@@ -57,7 +53,6 @@ IX_Manager ixm(pfm);
 RC Test1(void);
 RC Test2(void);
 RC Test3(void);
-RC Test4(void);
 
 void PrintError(RC rc);
 void LsFiles(char *fileName);
@@ -65,23 +60,21 @@ void ran(int n);
 RC InsertIntEntries(IX_IndexHandle &ih, int nEntries);
 RC InsertFloatEntries(IX_IndexHandle &ih, int nEntries);
 RC InsertStringEntries(IX_IndexHandle &ih, int nEntries);
-RC AddRecs(RM_FileHandle &fh, int nRecs);
 RC DeleteIntEntries(IX_IndexHandle &ih, int nEntries);
 RC DeleteFloatEntries(IX_IndexHandle &ih, int nEntries);
 RC DeleteStringEntries(IX_IndexHandle &ih, int nEntries);
 RC VerifyIntIndex(IX_IndexHandle &ih, int nStart, int nEntries, int bExists);
 RC PrintIndex(IX_IndexHandle &ih);
 
-//
+// 
 // Array of pointers to the test functions
 //
 #define NUM_TESTS       3               // number of tests
 int (*tests[])() =                      // RC doesn't work on some compilers
 {
-   Test1,
+   Test1, 
    Test2,
-   Test3,
-   Test4
+   Test3
 };
 
 //
@@ -102,7 +95,6 @@ int main(int argc, char *argv[])
    // Delete files from last time (if found)
    // Don't check the return codes, since we expect to get an error
    // if the files are not found.
-   rmm.DestroyFile(FILENAME);
    ixm.DestroyIndex(FILENAME, 0);
    ixm.DestroyIndex(FILENAME, 1);
    ixm.DestroyIndex(FILENAME, 2);
@@ -156,14 +148,17 @@ int main(int argc, char *argv[])
 //
 void PrintError(RC rc)
 {
-   if (abs(rc) <= END_PF_WARN)
-      PF_PrintError(rc);
-   else if (abs(rc) <= END_RM_WARN)
-      RM_PrintError(rc);
-   else if (abs(rc) <= END_IX_WARN)
-      IX_PrintError(rc);
-   else
-      cerr << "Error code out of range: " << rc << "\n";
+  if (abs(rc) <= END_PF_WARN)
+    PF_PrintError(rc);
+  // else if (abs(rc) <= END_RM_WARN)
+  // RM_PrintError(rc);
+  else if (abs(rc) <= END_IX_WARN)
+    IX_PrintError(rc);
+  else {
+    // be careful with the way you have defined the RM_WARN 
+    //   and IX_WARN
+    cerr << "Error code out of range: " << rc << "\n";
+  }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -174,7 +169,7 @@ void PrintError(RC rc)
 // LsFiles
 //
 // Desc: list the filename's directory entry
-//
+// 
 void LsFiles(char *fileName)
 {
    char command[80];
@@ -192,7 +187,7 @@ void ran(int n)
 {
    int i, r, t, m;
 
-   // Initialize values array
+   // Initialize values array 
    for (i = 0; i < NENTRIES; i++)
       values[i] = i;
 
@@ -221,12 +216,9 @@ RC InsertIntEntries(IX_IndexHandle &ih, int nEntries)
    for(i = 0; i < nEntries; i++) {
       value = values[i] + 1;
       RID rid(value, value*2);
-      cout << value << endl;
-      if ((rc = ih.InsertEntry((void *)&value, rid))) {
-         cout << rc << endl;
+      if ((rc = ih.InsertEntry((void *)&value, rid)))
          return (rc);
-      }
-      cout << "done" << i << endl;
+
       if((i + 1) % PROG_UNIT == 0){
          // cast to long for PC's
          printf("\r\t%d%%    ", (int)((i+1)*100L/nEntries));
@@ -291,40 +283,6 @@ RC InsertStringEntries(IX_IndexHandle &ih, int nEntries)
       }
    }
    printf("\r\t%d%%      \n", (int)(i*100L/nEntries));
-
-   // Return ok
-   return (0);
-}
-
-//
-// AddRecs
-//
-// Desc: Add a number of integer records to an RM file
-//
-RC AddRecs(RM_FileHandle &fh, int nRecs)
-{
-   RC      rc;
-   int     i;
-   int     value;
-   RID     rid;
-   PageNum pageNum;
-   SlotNum slotNum;
-
-   printf("           Adding %d int records to RM file\n", nRecs);
-   ran(nRecs);
-   for(i = 0; i < nRecs; i++) {
-      value = values[i] + 1;
-      if ((rc = fh.InsertRec((char *)&value, rid)) ||
-            (rc = rid.GetPageNum(pageNum)) ||
-            (rc = rid.GetSlotNum(slotNum)))
-         return (rc);
-
-      if((i + 1) % PROG_UNIT == 0){
-         printf("\r\t%d%%      ", (int)((i+1)*100L/nRecs));
-         fflush(stdout);
-      }
-   }
-   printf("\r\t%d%%      \n", (int)(i*100L/nRecs));
 
    // Return ok
    return (0);
@@ -417,8 +375,8 @@ RC DeleteStringEntries(IX_IndexHandle &ih, int nEntries)
 //   - nStart is the starting point in the values array to check
 //   - nEntries is the number of entries in the values array to check
 //   - If bExists == 1, verify that an index has entries as added
-//     by InsertIntEntries.
-//     If bExists == 0, verify that entries do NOT exist (you can
+//     by InsertIntEntries.  
+//     If bExists == 0, verify that entries do NOT exist (you can 
 //     use this to test deleting entries).
 //
 RC VerifyIntIndex(IX_IndexHandle &ih, int nStart, int nEntries, int bExists)
@@ -437,7 +395,7 @@ RC VerifyIntIndex(IX_IndexHandle &ih, int nStart, int nEntries, int bExists)
    for (i = nStart; i < nStart + nEntries; i++) {
       int value = values[i] + 1;
 
-      if ((rc = scan.OpenScan(ih, EQ_OP, &value))) {
+      if ((rc = scan.OpenScan(ih, &value))) {
          printf("Verify error: opening scan\n");
          return (rc);
       }
@@ -462,7 +420,7 @@ RC VerifyIntIndex(IX_IndexHandle &ih, int nStart, int nEntries, int bExists)
 
          if (pageNum != value || slotNum != (value*2)) {
             printf("Verify error: incorrect rid (%d,%d) found for entry %d\n",
-                  pageNum, slotNum, value);
+                  pageNum, slotNum, value);             
             return (IX_EOF);  // What should be returned here?
          }
 
@@ -493,7 +451,7 @@ RC VerifyIntIndex(IX_IndexHandle &ih, int nStart, int nEntries, int bExists)
 // Test1 tests simple creation, opening, closing, and deletion of indices
 //
 RC Test1(void)
-{
+{                  
    RC rc;
    int index=0;
    IX_IndexHandle ih;
@@ -518,7 +476,7 @@ RC Test1(void)
 // Test2 tests inserting a few integer entries into the index.
 //
 RC Test2(void)
-{
+{                               
    RC rc;
    IX_IndexHandle ih;
    int index=0;
@@ -579,101 +537,5 @@ RC Test3(void)
       return (rc);
 
    printf("Passed Test 3\n\n");
-   return (0);
-}
-
-//
-// Test 4 tests a few inequality scans on Btree indices
-//
-RC Test4(void)
-{
-   RC             rc;
-   IX_IndexHandle ih;
-   int            index=0;
-   int            i;
-   int            value=FEW_ENTRIES/2;
-   RID            rid;
-
-   printf("Test4: Inequality scans... \n");
-
-   if ((rc = ixm.CreateIndex(FILENAME, index, INT, sizeof(int))) ||
-         (rc = ixm.OpenIndex(FILENAME, index, ih)) ||
-         (rc = InsertIntEntries(ih, FEW_ENTRIES)))
-      return (rc);
-
-   // Scan <
-   IX_IndexScan scanlt;
-   if ((rc = scanlt.OpenScan(ih, LT_OP, &value))) {
-     printf("Scan error: opening scan\n");
-     return (rc);
-   }
-
-   i = 0;
-   while (!(rc = scanlt.GetNextEntry(rid))) {
-      i++;
-   }
-
-   if (rc != IX_EOF)
-      return (rc);
-
-   printf("Found %d entries in <-scan.", i);
-
-   // Scan <=
-   IX_IndexScan scanle;
-   if ((rc = scanle.OpenScan(ih, LE_OP, &value))) {
-     printf("Scan error: opening scan\n");
-     return (rc);
-   }
-
-   i = 0;
-   while (!(rc = scanle.GetNextEntry(rid))) {
-      i++;
-   }
-   if (rc != IX_EOF)
-      return (rc);
-
-   printf("Found %d entries in <=-scan.\n", i);
-
-   // Scan >
-   IX_IndexScan scangt;
-   if ((rc = scangt.OpenScan(ih, GT_OP, &value))) {
-     printf("Scan error: opening scan\n");
-     return (rc);
-   }
-
-   i = 0;
-   while (!(rc = scangt.GetNextEntry(rid))) {
-      i++;
-   }
-   if (rc != IX_EOF)
-      return (rc);
-
-   printf("Found %d entries in >-scan.\n", i);
-
-   // Scan >=
-   IX_IndexScan scange;
-   if ((rc = scange.OpenScan(ih, GE_OP, &value))) {
-     printf("Scan error: opening scan\n");
-     return (rc);
-   }
-
-   i = 0;
-   while (!(rc = scange.GetNextEntry(rid))) {
-      i++;
-   }
-   if (rc != IX_EOF)
-      return (rc);
-
-   printf("Found %d entries in >=-scan.\n", i);
-
-   if ((rc = ixm.CloseIndex(ih)))
-      return (rc);
-
-   LsFiles(FILENAME);
-
-   if ((rc = ixm.DestroyIndex(FILENAME, index)))
-      return (rc);
-
-   printf("Passed Test 4\n\n");
    return (0);
 }

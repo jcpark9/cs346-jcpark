@@ -18,7 +18,9 @@ static char *RM_WarnMsg[] = {
   (char*)"filescan is not initialized",
   (char*)"no more records found for file scan",
   (char*)"parameters for file scan are invalid",
-  (char*)"file scan is still open. close before opening again."
+  (char*)"file scan is still open. close before opening again.",
+  (char*)"filename given is null",
+  (char*)"data for insertion is null"
 };
 
 

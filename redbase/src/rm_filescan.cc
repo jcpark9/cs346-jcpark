@@ -1,10 +1,8 @@
 #include "rm_internal.h"
+#include "comp.h"
 #include <stdint.h>
 #include <assert.h>
 
-int IntCompare(char *rec, void *val, int n);
-int FloatCompare(char *rec, void *val, int n);
-int StringCompare(char *rec, void *val, int n);
 int SlotFull(int slotNum, char *pageData);
 
 RM_FileScan::RM_FileScan() { 
@@ -13,7 +11,7 @@ RM_FileScan::RM_FileScan() {
 
 RM_FileScan::~RM_FileScan() {
   // Unpin the current page if the object is being destroyed amid scanning
-  if (!scanComplete_) fileHandle_.PFfileHandle_.UnpinPage(currentPage_);
+  if (valid_ && !scanComplete_) fileHandle_.PFfileHandle_.UnpinPage(currentPage_);
 }
 
 RC RM_FileScan::OpenScan  (const RM_FileHandle &fileHandle,
@@ -107,32 +105,6 @@ RC RM_FileScan::FetchNextPage() {
     /* Return if there is at least one record to scan */
     if (phdr->numRecords > 0) return 0;
   }  
-}
-
-int StringCompare(char *rec, void *val, int n) {
-  return strncmp(rec, (char *)val, n);
-}
-
-int IntCompare(char *rec, void *val, int n) {
-  assert(sizeof(int32_t) == n);
-  int32_t rec_v, val_v;
-  memcpy(&val_v, val, n);
-  memcpy(&rec_v, rec, n);
-
-  if (rec_v == val_v) return 0;
-  if (rec_v < val_v) return -1;
-  return 1;
-}
-
-int FloatCompare(char *rec, void *val, int n) {
-  assert(sizeof(float) == n);
-  float rec_v, val_v;
-  memcpy(&val_v, val, n);
-  memcpy(&rec_v, rec, n);
-
-  if (rec_v == val_v) return 0;
-  if (rec_v < val_v) return -1;
-  return 1;
 }
 
 /* Returns 1 if the condition is met for the record residing in slotData 

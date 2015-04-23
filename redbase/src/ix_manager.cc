@@ -1,8 +1,9 @@
+#include <stdio.h>
 #include "ix_internal.h"
 
 IX_Manager::IX_Manager(PF_Manager &pfm)
 {
-	pfm_ = pfm;
+	pfm_ = &pfm;
 }
 
 IX_Manager::~IX_Manager() { }
@@ -11,53 +12,63 @@ IX_Manager::~IX_Manager() { }
 RC IX_Manager::CreateIndex(const char *fileName, int indexNo,
                    AttrType attrType, int attrLength)
 {
+    if (fileName == NULL) return IX_FILENAMENULL;
+
 	RC rc;
-	if (attrLength <= 0 || attrLength > MAXSTRINGLEN ||
+	if (indexNo < 0 || attrLength <= 0 || attrLength > MAXSTRINGLEN ||
 		attrType < 0 || attrType > STRING || 
 		((attrType == FLOAT || attrType == INT) && (attrLength != NUMLEN))) {
 		return IX_CREATEPARAMINVALID;
 	}
 
-	rc = pfm_.CreateFile(filename + "." + stoi(indexNo));
+    char indexfileName [strlen(fileName) + 15];
+    sprintf(indexfileName, "%s.%d", fileName, indexNo);
+
+	rc = pfm_->CreateFile(indexfileName);
 	if (rc) return rc;
 
 	/* Fill out Index File Header */
 	IX_FileHdr fileHdr;
-    fileHdr.maxKeysInternal = (PF_PAGE_SIZE - sizeof(PageNum)) / (sizeof(RID) + attrLength + sizeof(PageNum));
-    fileHdr.maxKeysLeaf = (PF_PAGE_SIZE - sizeof(PageNum)) / (sizeof(RID) + attrLength);
+    fileHdr.maxKeysInternal = (PF_PAGE_SIZE - sizeof(IX_NodeHdr)) / (attrLength + sizeof(RID) + sizeof(PageNum));
+    fileHdr.maxKeysLeaf = (PF_PAGE_SIZE - sizeof(IX_LeafHdr)) / (attrLength + sizeof(RID));
     fileHdr.attrType = attrType;
     fileHdr.attrLength = attrLength;
     fileHdr.numKeys = 0;
 
     /* Open the new file and allocate a new page for index file header */
     PF_FileHandle newFileHandle;
-    rc = pfmanager_->OpenFile(filename + "." + stoi(indexNo), newFileHandle);
+    PageNum pgnum;
+    rc = pfm_->OpenFile(indexfileName, newFileHandle);
     if (rc) return rc;
 
     PF_PageHandle headerPageHandle;
     rc = newFileHandle.AllocatePage(headerPageHandle);
     if (rc) return rc;
-
-    /* Allocate a new page for root node */
+    headerPageHandle.GetPageNum(pgnum);
+    
+    // Allocate a new page for root node
     PF_PageHandle rootPageHandle;
+    PageNum rootPageNum;
     rc = newFileHandle.AllocatePage(rootPageHandle);
     if (rc) return rc;
-    rootPageHandle.GetPageNum(fileHdr.rootPage);
+    rootPageHandle.GetPageNum(rootPageNum);
 
-    /* Initialize root header */
+    // Initialize root header
     char *rootPageData;
-    rootPageHandle.GetPageData(rootPageData);
+    rootPageHandle.GetData(rootPageData);
     IX_NodeHdr *rootHdr = (IX_NodeHdr *) rootPageData;
     rootHdr->nodeType = root;
     rootHdr->numKeys = 0;
-    
-    /* Mark root page as dirty and unpin it */
-    rc = newFileHandle.MarkDirty(fileHdr.rootPage);
+    rootHdr->numChild = 0;
+
+    // Mark root page as dirty and unpin it
+    rc = newFileHandle.MarkDirty(rootPageNum);
     if (rc) return rc;
-    rc = newFileHandle.UnpinPage(fileHdr.rootPage);
+    rc = newFileHandle.UnpinPage(rootPageNum);
     if (rc) return rc;
 
     /* Copy file header onto header page */
+    fileHdr.rootPage = rootPageNum;
     char *headerPageData;
     headerPageHandle.GetData(headerPageData);
     memcpy(headerPageData, &fileHdr, sizeof(IX_FileHdr));
@@ -72,18 +83,27 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo,
 
 RC IX_Manager::DestroyIndex(const char *fileName, int indexNo)
 {
-	return pfmanager_->DestroyFile(fileName + "." + indexNo);
+    if (fileName == NULL) return IX_FILENAMENULL;
+
+    char indexfileName [strlen(fileName) + 15];
+    sprintf(indexfileName, "%s.%d", fileName, indexNo);
+	return pfm_->DestroyFile(indexfileName);
 }
 
 RC IX_Manager::OpenIndex(const char *fileName, int indexNo,
                  IX_IndexHandle &indexHandle)
 {
-    RC rc = pfm_->OpenFile(fileName + "." + indexNo, indexHandle.PFindexHandle_);
+    if (fileName == NULL) return IX_FILENAMENULL;
+
+    char indexfileName [strlen(fileName) + 15];
+    sprintf(indexfileName, "%s.%d", fileName, indexNo);
+    
+    RC rc = pfm_->OpenFile(indexfileName, indexHandle.PFfileHandle_);
     if (rc) return rc;
 
     /* Fetch header page */
     PF_PageHandle headerPageHandle;
-    rc = indexHandle.PFindexHandle_.GetFirstPage(headerPageHandle);
+    rc = indexHandle.PFfileHandle_.GetFirstPage(headerPageHandle);
     if (rc) return rc;
 
     /* Copy file header to FileHandle object */
@@ -91,9 +111,11 @@ RC IX_Manager::OpenIndex(const char *fileName, int indexNo,
     headerPageHandle.GetData(headerPageData);
     memcpy(&(indexHandle.hdr_), headerPageData, sizeof(IX_FileHdr));
 
-    indexHandle.PFindexHandle_.UnpinPage(HEADER_PAGENUM);
+    indexHandle.PFfileHandle_.UnpinPage(HEADER_PAGENUM);
     indexHandle.valid_ = 1;
     indexHandle.hdrModified_ = 0;
+    indexHandle.keylen_ = indexHandle.hdr_.attrLength + sizeof(RID);
+
     return 0;
 }
 
@@ -101,10 +123,11 @@ RC IX_Manager::CloseIndex(IX_IndexHandle &indexHandle)
 {
     RC rc;
     if (!indexHandle.valid_) return IX_FILEINVALID;
-    /* Write file header if modified */
+    if (indexHandle.scans_ != 0) return IX_SCANOPEN;
+    /* Write index file header if modified */
     if (indexHandle.hdrModified_) {
         PF_PageHandle headerPageHandle;
-        rc = indexHandle.PFindexHandle_.GetFirstPage(headerPageHandle);
+        rc = indexHandle.PFfileHandle_.GetFirstPage(headerPageHandle);
         if (rc) return rc;
 
         /* Copy file header onto header page */
@@ -113,15 +136,14 @@ RC IX_Manager::CloseIndex(IX_IndexHandle &indexHandle)
         memcpy(headerPageData, &(indexHandle.hdr_), sizeof(IX_FileHdr));
 
         /* Mark header page as dirty and unpin it */
-        indexHandle.PFindexHandle_.MarkDirty(HEADER_PAGENUM);
-        indexHandle.PFindexHandle_.UnpinPage(HEADER_PAGENUM);
+        indexHandle.PFfileHandle_.MarkDirty(HEADER_PAGENUM);
+        indexHandle.PFfileHandle_.UnpinPage(HEADER_PAGENUM);
     }
 
-    rc = pfm_->CloseFile(indexHandle.PFindexHandle_);
+    rc = pfm_->CloseFile(indexHandle.PFfileHandle_);
     if (rc) return rc;
     
     indexHandle.valid_ = 0;
-    indexHandle.hdrModified_ = 0;
 
     return 0;
 }

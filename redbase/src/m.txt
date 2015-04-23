@@ -1,0 +1,1225 @@
+Starting IX component test.
+
+Test4: Inequality scans... 
+             Adding 200 int entries
+	100%    	100%      
+2
+existingKey_ == 1
+value_ == 100
+0
+Found 0 entries in <-scan.
+2
+existingKey_ == 1
+value_ == 100
+0
+Found 0 entries in <=-scan.
+existingKey_ == 1
+value_ == 100
+1
+existingKey_ == 2
+value_ == 100
+1
+existingKey_ == 3
+value_ == 100
+1
+existingKey_ == 4
+value_ == 100
+1
+existingKey_ == 5
+value_ == 100
+1
+existingKey_ == 6
+value_ == 100
+1
+existingKey_ == 7
+value_ == 100
+1
+existingKey_ == 8
+value_ == 100
+1
+existingKey_ == 9
+value_ == 100
+1
+existingKey_ == 10
+value_ == 100
+1
+existingKey_ == 11
+value_ == 100
+1
+existingKey_ == 12
+value_ == 100
+1
+existingKey_ == 13
+value_ == 100
+1
+existingKey_ == 14
+value_ == 100
+1
+existingKey_ == 15
+value_ == 100
+1
+existingKey_ == 16
+value_ == 100
+1
+existingKey_ == 17
+value_ == 100
+1
+existingKey_ == 18
+value_ == 100
+1
+existingKey_ == 19
+value_ == 100
+1
+existingKey_ == 20
+value_ == 100
+1
+existingKey_ == 21
+value_ == 100
+1
+existingKey_ == 22
+value_ == 100
+1
+existingKey_ == 23
+value_ == 100
+1
+existingKey_ == 24
+value_ == 100
+1
+existingKey_ == 25
+value_ == 100
+1
+existingKey_ == 26
+value_ == 100
+1
+existingKey_ == 27
+value_ == 100
+1
+existingKey_ == 28
+value_ == 100
+1
+existingKey_ == 29
+value_ == 100
+1
+existingKey_ == 30
+value_ == 100
+1
+existingKey_ == 31
+value_ == 100
+1
+existingKey_ == 32
+value_ == 100
+1
+existingKey_ == 33
+value_ == 100
+1
+existingKey_ == 34
+value_ == 100
+1
+existingKey_ == 35
+value_ == 100
+1
+existingKey_ == 36
+value_ == 100
+1
+existingKey_ == 37
+value_ == 100
+1
+existingKey_ == 38
+value_ == 100
+1
+existingKey_ == 39
+value_ == 100
+1
+existingKey_ == 40
+value_ == 100
+1
+existingKey_ == 41
+value_ == 100
+1
+existingKey_ == 42
+value_ == 100
+1
+existingKey_ == 43
+value_ == 100
+1
+existingKey_ == 44
+value_ == 100
+1
+existingKey_ == 45
+value_ == 100
+1
+existingKey_ == 46
+value_ == 100
+1
+existingKey_ == 47
+value_ == 100
+1
+existingKey_ == 48
+value_ == 100
+1
+existingKey_ == 49
+value_ == 100
+1
+existingKey_ == 50
+value_ == 100
+1
+existingKey_ == 51
+value_ == 100
+1
+existingKey_ == 52
+value_ == 100
+1
+existingKey_ == 53
+value_ == 100
+1
+existingKey_ == 54
+value_ == 100
+1
+existingKey_ == 55
+value_ == 100
+1
+existingKey_ == 56
+value_ == 100
+1
+existingKey_ == 57
+value_ == 100
+1
+existingKey_ == 58
+value_ == 100
+1
+existingKey_ == 59
+value_ == 100
+1
+existingKey_ == 60
+value_ == 100
+1
+existingKey_ == 61
+value_ == 100
+1
+existingKey_ == 62
+value_ == 100
+1
+existingKey_ == 63
+value_ == 100
+1
+existingKey_ == 64
+value_ == 100
+1
+existingKey_ == 65
+value_ == 100
+1
+existingKey_ == 66
+value_ == 100
+1
+existingKey_ == 67
+value_ == 100
+1
+existingKey_ == 68
+value_ == 100
+1
+existingKey_ == 69
+value_ == 100
+1
+existingKey_ == 70
+value_ == 100
+1
+existingKey_ == 71
+value_ == 100
+1
+existingKey_ == 72
+value_ == 100
+1
+existingKey_ == 73
+value_ == 100
+1
+existingKey_ == 74
+value_ == 100
+1
+existingKey_ == 75
+value_ == 100
+1
+existingKey_ == 76
+value_ == 100
+1
+existingKey_ == 77
+value_ == 100
+1
+existingKey_ == 78
+value_ == 100
+1
+existingKey_ == 79
+value_ == 100
+1
+existingKey_ == 80
+value_ == 100
+1
+existingKey_ == 81
+value_ == 100
+1
+existingKey_ == 82
+value_ == 100
+1
+existingKey_ == 83
+value_ == 100
+1
+existingKey_ == 84
+value_ == 100
+1
+existingKey_ == 85
+value_ == 100
+1
+existingKey_ == 86
+value_ == 100
+1
+existingKey_ == 87
+value_ == 100
+1
+existingKey_ == 88
+value_ == 100
+1
+existingKey_ == 89
+value_ == 100
+1
+existingKey_ == 90
+value_ == 100
+1
+existingKey_ == 91
+value_ == 100
+1
+existingKey_ == 92
+value_ == 100
+1
+existingKey_ == 93
+value_ == 100
+1
+existingKey_ == 94
+value_ == 100
+1
+existingKey_ == 95
+value_ == 100
+1
+existingKey_ == 96
+value_ == 100
+1
+existingKey_ == 97
+value_ == 100
+1
+existingKey_ == 98
+value_ == 100
+1
+existingKey_ == 99
+value_ == 100
+1
+existingKey_ == 100
+value_ == 100
+1
+existingKey_ == 101
+value_ == 100
+1
+existingKey_ == 102
+value_ == 100
+1
+existingKey_ == 103
+value_ == 100
+1
+existingKey_ == 104
+value_ == 100
+1
+existingKey_ == 105
+value_ == 100
+1
+existingKey_ == 106
+value_ == 100
+1
+existingKey_ == 107
+value_ == 100
+1
+existingKey_ == 108
+value_ == 100
+1
+existingKey_ == 109
+value_ == 100
+1
+existingKey_ == 110
+value_ == 100
+1
+existingKey_ == 111
+value_ == 100
+1
+existingKey_ == 112
+value_ == 100
+1
+existingKey_ == 113
+value_ == 100
+1
+existingKey_ == 114
+value_ == 100
+1
+existingKey_ == 115
+value_ == 100
+1
+existingKey_ == 116
+value_ == 100
+1
+existingKey_ == 117
+value_ == 100
+1
+existingKey_ == 118
+value_ == 100
+1
+existingKey_ == 119
+value_ == 100
+1
+existingKey_ == 120
+value_ == 100
+1
+existingKey_ == 121
+value_ == 100
+1
+existingKey_ == 122
+value_ == 100
+1
+existingKey_ == 123
+value_ == 100
+1
+existingKey_ == 124
+value_ == 100
+1
+existingKey_ == 125
+value_ == 100
+1
+existingKey_ == 126
+value_ == 100
+1
+existingKey_ == 127
+value_ == 100
+1
+existingKey_ == 128
+value_ == 100
+1
+existingKey_ == 129
+value_ == 100
+1
+existingKey_ == 130
+value_ == 100
+1
+existingKey_ == 131
+value_ == 100
+1
+existingKey_ == 132
+value_ == 100
+1
+existingKey_ == 133
+value_ == 100
+1
+existingKey_ == 134
+value_ == 100
+1
+existingKey_ == 135
+value_ == 100
+1
+existingKey_ == 136
+value_ == 100
+1
+existingKey_ == 137
+value_ == 100
+1
+existingKey_ == 138
+value_ == 100
+1
+existingKey_ == 139
+value_ == 100
+1
+existingKey_ == 140
+value_ == 100
+1
+existingKey_ == 141
+value_ == 100
+1
+existingKey_ == 142
+value_ == 100
+1
+existingKey_ == 143
+value_ == 100
+1
+existingKey_ == 144
+value_ == 100
+1
+existingKey_ == 145
+value_ == 100
+1
+existingKey_ == 146
+value_ == 100
+1
+existingKey_ == 147
+value_ == 100
+1
+existingKey_ == 148
+value_ == 100
+1
+existingKey_ == 149
+value_ == 100
+1
+existingKey_ == 150
+value_ == 100
+1
+existingKey_ == 151
+value_ == 100
+1
+existingKey_ == 152
+value_ == 100
+1
+existingKey_ == 153
+value_ == 100
+1
+existingKey_ == 154
+value_ == 100
+1
+existingKey_ == 155
+value_ == 100
+1
+existingKey_ == 156
+value_ == 100
+1
+existingKey_ == 157
+value_ == 100
+1
+existingKey_ == 158
+value_ == 100
+1
+existingKey_ == 159
+value_ == 100
+1
+existingKey_ == 160
+value_ == 100
+1
+existingKey_ == 161
+value_ == 100
+1
+existingKey_ == 162
+value_ == 100
+1
+existingKey_ == 163
+value_ == 100
+1
+existingKey_ == 164
+value_ == 100
+1
+existingKey_ == 165
+value_ == 100
+1
+existingKey_ == 166
+value_ == 100
+1
+existingKey_ == 167
+value_ == 100
+1
+existingKey_ == 168
+value_ == 100
+1
+existingKey_ == 169
+value_ == 100
+1
+existingKey_ == 170
+value_ == 100
+1
+existingKey_ == 171
+value_ == 100
+1
+existingKey_ == 172
+value_ == 100
+1
+existingKey_ == 173
+value_ == 100
+1
+existingKey_ == 174
+value_ == 100
+1
+existingKey_ == 175
+value_ == 100
+1
+existingKey_ == 176
+value_ == 100
+1
+existingKey_ == 177
+value_ == 100
+1
+existingKey_ == 178
+value_ == 100
+1
+existingKey_ == 179
+value_ == 100
+1
+existingKey_ == 180
+value_ == 100
+1
+existingKey_ == 181
+value_ == 100
+1
+existingKey_ == 182
+value_ == 100
+1
+existingKey_ == 183
+value_ == 100
+1
+existingKey_ == 184
+value_ == 100
+1
+existingKey_ == 185
+value_ == 100
+1
+existingKey_ == 186
+value_ == 100
+1
+existingKey_ == 187
+value_ == 100
+1
+existingKey_ == 188
+value_ == 100
+1
+existingKey_ == 189
+value_ == 100
+1
+existingKey_ == 190
+value_ == 100
+1
+existingKey_ == 191
+value_ == 100
+1
+existingKey_ == 192
+value_ == 100
+1
+existingKey_ == 193
+value_ == 100
+1
+existingKey_ == 194
+value_ == 100
+1
+existingKey_ == 195
+value_ == 100
+1
+existingKey_ == 196
+value_ == 100
+1
+existingKey_ == 197
+value_ == 100
+1
+existingKey_ == 198
+value_ == 100
+1
+existingKey_ == 199
+value_ == 100
+1
+existingKey_ == 200
+value_ == 100
+1
+Found 200 entries in >-scan.
+existingKey_ == 1
+value_ == 100
+1
+existingKey_ == 2
+value_ == 100
+1
+existingKey_ == 3
+value_ == 100
+1
+existingKey_ == 4
+value_ == 100
+1
+existingKey_ == 5
+value_ == 100
+1
+existingKey_ == 6
+value_ == 100
+1
+existingKey_ == 7
+value_ == 100
+1
+existingKey_ == 8
+value_ == 100
+1
+existingKey_ == 9
+value_ == 100
+1
+existingKey_ == 10
+value_ == 100
+1
+existingKey_ == 11
+value_ == 100
+1
+existingKey_ == 12
+value_ == 100
+1
+existingKey_ == 13
+value_ == 100
+1
+existingKey_ == 14
+value_ == 100
+1
+existingKey_ == 15
+value_ == 100
+1
+existingKey_ == 16
+value_ == 100
+1
+existingKey_ == 17
+value_ == 100
+1
+existingKey_ == 18
+value_ == 100
+1
+existingKey_ == 19
+value_ == 100
+1
+existingKey_ == 20
+value_ == 100
+1
+existingKey_ == 21
+value_ == 100
+1
+existingKey_ == 22
+value_ == 100
+1
+existingKey_ == 23
+value_ == 100
+1
+existingKey_ == 24
+value_ == 100
+1
+existingKey_ == 25
+value_ == 100
+1
+existingKey_ == 26
+value_ == 100
+1
+existingKey_ == 27
+value_ == 100
+1
+existingKey_ == 28
+value_ == 100
+1
+existingKey_ == 29
+value_ == 100
+1
+existingKey_ == 30
+value_ == 100
+1
+existingKey_ == 31
+value_ == 100
+1
+existingKey_ == 32
+value_ == 100
+1
+existingKey_ == 33
+value_ == 100
+1
+existingKey_ == 34
+value_ == 100
+1
+existingKey_ == 35
+value_ == 100
+1
+existingKey_ == 36
+value_ == 100
+1
+existingKey_ == 37
+value_ == 100
+1
+existingKey_ == 38
+value_ == 100
+1
+existingKey_ == 39
+value_ == 100
+1
+existingKey_ == 40
+value_ == 100
+1
+existingKey_ == 41
+value_ == 100
+1
+existingKey_ == 42
+value_ == 100
+1
+existingKey_ == 43
+value_ == 100
+1
+existingKey_ == 44
+value_ == 100
+1
+existingKey_ == 45
+value_ == 100
+1
+existingKey_ == 46
+value_ == 100
+1
+existingKey_ == 47
+value_ == 100
+1
+existingKey_ == 48
+value_ == 100
+1
+existingKey_ == 49
+value_ == 100
+1
+existingKey_ == 50
+value_ == 100
+1
+existingKey_ == 51
+value_ == 100
+1
+existingKey_ == 52
+value_ == 100
+1
+existingKey_ == 53
+value_ == 100
+1
+existingKey_ == 54
+value_ == 100
+1
+existingKey_ == 55
+value_ == 100
+1
+existingKey_ == 56
+value_ == 100
+1
+existingKey_ == 57
+value_ == 100
+1
+existingKey_ == 58
+value_ == 100
+1
+existingKey_ == 59
+value_ == 100
+1
+existingKey_ == 60
+value_ == 100
+1
+existingKey_ == 61
+value_ == 100
+1
+existingKey_ == 62
+value_ == 100
+1
+existingKey_ == 63
+value_ == 100
+1
+existingKey_ == 64
+value_ == 100
+1
+existingKey_ == 65
+value_ == 100
+1
+existingKey_ == 66
+value_ == 100
+1
+existingKey_ == 67
+value_ == 100
+1
+existingKey_ == 68
+value_ == 100
+1
+existingKey_ == 69
+value_ == 100
+1
+existingKey_ == 70
+value_ == 100
+1
+existingKey_ == 71
+value_ == 100
+1
+existingKey_ == 72
+value_ == 100
+1
+existingKey_ == 73
+value_ == 100
+1
+existingKey_ == 74
+value_ == 100
+1
+existingKey_ == 75
+value_ == 100
+1
+existingKey_ == 76
+value_ == 100
+1
+existingKey_ == 77
+value_ == 100
+1
+existingKey_ == 78
+value_ == 100
+1
+existingKey_ == 79
+value_ == 100
+1
+existingKey_ == 80
+value_ == 100
+1
+existingKey_ == 81
+value_ == 100
+1
+existingKey_ == 82
+value_ == 100
+1
+existingKey_ == 83
+value_ == 100
+1
+existingKey_ == 84
+value_ == 100
+1
+existingKey_ == 85
+value_ == 100
+1
+existingKey_ == 86
+value_ == 100
+1
+existingKey_ == 87
+value_ == 100
+1
+existingKey_ == 88
+value_ == 100
+1
+existingKey_ == 89
+value_ == 100
+1
+existingKey_ == 90
+value_ == 100
+1
+existingKey_ == 91
+value_ == 100
+1
+existingKey_ == 92
+value_ == 100
+1
+existingKey_ == 93
+value_ == 100
+1
+existingKey_ == 94
+value_ == 100
+1
+existingKey_ == 95
+value_ == 100
+1
+existingKey_ == 96
+value_ == 100
+1
+existingKey_ == 97
+value_ == 100
+1
+existingKey_ == 98
+value_ == 100
+1
+existingKey_ == 99
+value_ == 100
+1
+existingKey_ == 100
+value_ == 100
+1
+existingKey_ == 101
+value_ == 100
+1
+existingKey_ == 102
+value_ == 100
+1
+existingKey_ == 103
+value_ == 100
+1
+existingKey_ == 104
+value_ == 100
+1
+existingKey_ == 105
+value_ == 100
+1
+existingKey_ == 106
+value_ == 100
+1
+existingKey_ == 107
+value_ == 100
+1
+existingKey_ == 108
+value_ == 100
+1
+existingKey_ == 109
+value_ == 100
+1
+existingKey_ == 110
+value_ == 100
+1
+existingKey_ == 111
+value_ == 100
+1
+existingKey_ == 112
+value_ == 100
+1
+existingKey_ == 113
+value_ == 100
+1
+existingKey_ == 114
+value_ == 100
+1
+existingKey_ == 115
+value_ == 100
+1
+existingKey_ == 116
+value_ == 100
+1
+existingKey_ == 117
+value_ == 100
+1
+existingKey_ == 118
+value_ == 100
+1
+existingKey_ == 119
+value_ == 100
+1
+existingKey_ == 120
+value_ == 100
+1
+existingKey_ == 121
+value_ == 100
+1
+existingKey_ == 122
+value_ == 100
+1
+existingKey_ == 123
+value_ == 100
+1
+existingKey_ == 124
+value_ == 100
+1
+existingKey_ == 125
+value_ == 100
+1
+existingKey_ == 126
+value_ == 100
+1
+existingKey_ == 127
+value_ == 100
+1
+existingKey_ == 128
+value_ == 100
+1
+existingKey_ == 129
+value_ == 100
+1
+existingKey_ == 130
+value_ == 100
+1
+existingKey_ == 131
+value_ == 100
+1
+existingKey_ == 132
+value_ == 100
+1
+existingKey_ == 133
+value_ == 100
+1
+existingKey_ == 134
+value_ == 100
+1
+existingKey_ == 135
+value_ == 100
+1
+existingKey_ == 136
+value_ == 100
+1
+existingKey_ == 137
+value_ == 100
+1
+existingKey_ == 138
+value_ == 100
+1
+existingKey_ == 139
+value_ == 100
+1
+existingKey_ == 140
+value_ == 100
+1
+existingKey_ == 141
+value_ == 100
+1
+existingKey_ == 142
+value_ == 100
+1
+existingKey_ == 143
+value_ == 100
+1
+existingKey_ == 144
+value_ == 100
+1
+existingKey_ == 145
+value_ == 100
+1
+existingKey_ == 146
+value_ == 100
+1
+existingKey_ == 147
+value_ == 100
+1
+existingKey_ == 148
+value_ == 100
+1
+existingKey_ == 149
+value_ == 100
+1
+existingKey_ == 150
+value_ == 100
+1
+existingKey_ == 151
+value_ == 100
+1
+existingKey_ == 152
+value_ == 100
+1
+existingKey_ == 153
+value_ == 100
+1
+existingKey_ == 154
+value_ == 100
+1
+existingKey_ == 155
+value_ == 100
+1
+existingKey_ == 156
+value_ == 100
+1
+existingKey_ == 157
+value_ == 100
+1
+existingKey_ == 158
+value_ == 100
+1
+existingKey_ == 159
+value_ == 100
+1
+existingKey_ == 160
+value_ == 100
+1
+existingKey_ == 161
+value_ == 100
+1
+existingKey_ == 162
+value_ == 100
+1
+existingKey_ == 163
+value_ == 100
+1
+existingKey_ == 164
+value_ == 100
+1
+existingKey_ == 165
+value_ == 100
+1
+existingKey_ == 166
+value_ == 100
+1
+existingKey_ == 167
+value_ == 100
+1
+existingKey_ == 168
+value_ == 100
+1
+existingKey_ == 169
+value_ == 100
+1
+existingKey_ == 170
+value_ == 100
+1
+existingKey_ == 171
+value_ == 100
+1
+existingKey_ == 172
+value_ == 100
+1
+existingKey_ == 173
+value_ == 100
+1
+existingKey_ == 174
+value_ == 100
+1
+existingKey_ == 175
+value_ == 100
+1
+existingKey_ == 176
+value_ == 100
+1
+existingKey_ == 177
+value_ == 100
+1
+existingKey_ == 178
+value_ == 100
+1
+existingKey_ == 179
+value_ == 100
+1
+existingKey_ == 180
+value_ == 100
+1
+existingKey_ == 181
+value_ == 100
+1
+existingKey_ == 182
+value_ == 100
+1
+existingKey_ == 183
+value_ == 100
+1
+existingKey_ == 184
+value_ == 100
+1
+existingKey_ == 185
+value_ == 100
+1
+existingKey_ == 186
+value_ == 100
+1
+existingKey_ == 187
+value_ == 100
+1
+existingKey_ == 188
+value_ == 100
+1
+existingKey_ == 189
+value_ == 100
+1
+existingKey_ == 190
+value_ == 100
+1
+existingKey_ == 191
+value_ == 100
+1
+existingKey_ == 192
+value_ == 100
+1
+existingKey_ == 193
+value_ == 100
+1
+existingKey_ == 194
+value_ == 100
+1
+existingKey_ == 195
+value_ == 100
+1
+existingKey_ == 196
+value_ == 100
+1
+existingKey_ == 197
+value_ == 100
+1
+existingKey_ == 198
+value_ == 100
+1
+existingKey_ == 199
+value_ == 100
+1
+existingKey_ == 200
+value_ == 100
+1
+-rw-rw----+ 1 Jichan None 16384 Apr 23 11:21 testrel.0
+-rw-rw----+ 1 Jichan None 12288 Apr 23 10:30 testrel.10
+-rw-rw----+ 1 Jichan None 12288 Apr 23 10:30 testrel.5
+Found 200 entries in >=-scan.
+Doing "ls -l *testrel*"
+Passed Test 4
+
+Ending IX component test.
+

@@ -1,0 +1,1627 @@
+Starting IX component test.
+
+Test4: Inequality scans... 
+             Adding 200 int entries
+	100%    	100%      
+2
+existingKey_ == 1
+value_ == 100
+1
+0
+1
+Found 0 entries in <-scan.
+2
+existingKey_ == 1
+value_ == 100
+0
+Found 0 entries in <=-scan.
+existingKey_ == 1
+value_ == 100
+1
+1  RID 1:2
+existingKey_ == 2
+value_ == 100
+1
+2  RID 2:4
+existingKey_ == 3
+value_ == 100
+1
+3  RID 3:6
+existingKey_ == 4
+value_ == 100
+1
+4  RID 4:8
+existingKey_ == 5
+value_ == 100
+1
+5  RID 5:10
+existingKey_ == 6
+value_ == 100
+1
+6  RID 6:12
+existingKey_ == 7
+value_ == 100
+1
+7  RID 7:14
+existingKey_ == 8
+value_ == 100
+1
+8  RID 8:16
+existingKey_ == 9
+value_ == 100
+1
+9  RID 9:18
+existingKey_ == 10
+value_ == 100
+1
+10  RID 10:20
+existingKey_ == 11
+value_ == 100
+1
+11  RID 11:22
+existingKey_ == 12
+value_ == 100
+1
+12  RID 12:24
+existingKey_ == 13
+value_ == 100
+1
+13  RID 13:26
+existingKey_ == 14
+value_ == 100
+1
+14  RID 14:28
+existingKey_ == 15
+value_ == 100
+1
+15  RID 15:30
+existingKey_ == 16
+value_ == 100
+1
+16  RID 16:32
+existingKey_ == 17
+value_ == 100
+1
+17  RID 17:34
+existingKey_ == 18
+value_ == 100
+1
+18  RID 18:36
+existingKey_ == 19
+value_ == 100
+1
+19  RID 19:38
+existingKey_ == 20
+value_ == 100
+1
+20  RID 20:40
+existingKey_ == 21
+value_ == 100
+1
+21  RID 21:42
+existingKey_ == 22
+value_ == 100
+1
+22  RID 22:44
+existingKey_ == 23
+value_ == 100
+1
+23  RID 23:46
+existingKey_ == 24
+value_ == 100
+1
+24  RID 24:48
+existingKey_ == 25
+value_ == 100
+1
+25  RID 25:50
+existingKey_ == 26
+value_ == 100
+1
+26  RID 26:52
+existingKey_ == 27
+value_ == 100
+1
+27  RID 27:54
+existingKey_ == 28
+value_ == 100
+1
+28  RID 28:56
+existingKey_ == 29
+value_ == 100
+1
+29  RID 29:58
+existingKey_ == 30
+value_ == 100
+1
+30  RID 30:60
+existingKey_ == 31
+value_ == 100
+1
+31  RID 31:62
+existingKey_ == 32
+value_ == 100
+1
+32  RID 32:64
+existingKey_ == 33
+value_ == 100
+1
+33  RID 33:66
+existingKey_ == 34
+value_ == 100
+1
+34  RID 34:68
+existingKey_ == 35
+value_ == 100
+1
+35  RID 35:70
+existingKey_ == 36
+value_ == 100
+1
+36  RID 36:72
+existingKey_ == 37
+value_ == 100
+1
+37  RID 37:74
+existingKey_ == 38
+value_ == 100
+1
+38  RID 38:76
+existingKey_ == 39
+value_ == 100
+1
+39  RID 39:78
+existingKey_ == 40
+value_ == 100
+1
+40  RID 40:80
+existingKey_ == 41
+value_ == 100
+1
+41  RID 41:82
+existingKey_ == 42
+value_ == 100
+1
+42  RID 42:84
+existingKey_ == 43
+value_ == 100
+1
+43  RID 43:86
+existingKey_ == 44
+value_ == 100
+1
+44  RID 44:88
+existingKey_ == 45
+value_ == 100
+1
+45  RID 45:90
+existingKey_ == 46
+value_ == 100
+1
+46  RID 46:92
+existingKey_ == 47
+value_ == 100
+1
+47  RID 47:94
+existingKey_ == 48
+value_ == 100
+1
+48  RID 48:96
+existingKey_ == 49
+value_ == 100
+1
+49  RID 49:98
+existingKey_ == 50
+value_ == 100
+1
+50  RID 50:100
+existingKey_ == 51
+value_ == 100
+1
+51  RID 51:102
+existingKey_ == 52
+value_ == 100
+1
+52  RID 52:104
+existingKey_ == 53
+value_ == 100
+1
+53  RID 53:106
+existingKey_ == 54
+value_ == 100
+1
+54  RID 54:108
+existingKey_ == 55
+value_ == 100
+1
+55  RID 55:110
+existingKey_ == 56
+value_ == 100
+1
+56  RID 56:112
+existingKey_ == 57
+value_ == 100
+1
+57  RID 57:114
+existingKey_ == 58
+value_ == 100
+1
+58  RID 58:116
+existingKey_ == 59
+value_ == 100
+1
+59  RID 59:118
+existingKey_ == 60
+value_ == 100
+1
+60  RID 60:120
+existingKey_ == 61
+value_ == 100
+1
+61  RID 61:122
+existingKey_ == 62
+value_ == 100
+1
+62  RID 62:124
+existingKey_ == 63
+value_ == 100
+1
+63  RID 63:126
+existingKey_ == 64
+value_ == 100
+1
+64  RID 64:128
+existingKey_ == 65
+value_ == 100
+1
+65  RID 65:130
+existingKey_ == 66
+value_ == 100
+1
+66  RID 66:132
+existingKey_ == 67
+value_ == 100
+1
+67  RID 67:134
+existingKey_ == 68
+value_ == 100
+1
+68  RID 68:136
+existingKey_ == 69
+value_ == 100
+1
+69  RID 69:138
+existingKey_ == 70
+value_ == 100
+1
+70  RID 70:140
+existingKey_ == 71
+value_ == 100
+1
+71  RID 71:142
+existingKey_ == 72
+value_ == 100
+1
+72  RID 72:144
+existingKey_ == 73
+value_ == 100
+1
+73  RID 73:146
+existingKey_ == 74
+value_ == 100
+1
+74  RID 74:148
+existingKey_ == 75
+value_ == 100
+1
+75  RID 75:150
+existingKey_ == 76
+value_ == 100
+1
+76  RID 76:152
+existingKey_ == 77
+value_ == 100
+1
+77  RID 77:154
+existingKey_ == 78
+value_ == 100
+1
+78  RID 78:156
+existingKey_ == 79
+value_ == 100
+1
+79  RID 79:158
+existingKey_ == 80
+value_ == 100
+1
+80  RID 80:160
+existingKey_ == 81
+value_ == 100
+1
+81  RID 81:162
+existingKey_ == 82
+value_ == 100
+1
+82  RID 82:164
+existingKey_ == 83
+value_ == 100
+1
+83  RID 83:166
+existingKey_ == 84
+value_ == 100
+1
+84  RID 84:168
+existingKey_ == 85
+value_ == 100
+1
+85  RID 85:170
+existingKey_ == 86
+value_ == 100
+1
+86  RID 86:172
+existingKey_ == 87
+value_ == 100
+1
+87  RID 87:174
+existingKey_ == 88
+value_ == 100
+1
+88  RID 88:176
+existingKey_ == 89
+value_ == 100
+1
+89  RID 89:178
+existingKey_ == 90
+value_ == 100
+1
+90  RID 90:180
+existingKey_ == 91
+value_ == 100
+1
+91  RID 91:182
+existingKey_ == 92
+value_ == 100
+1
+92  RID 92:184
+existingKey_ == 93
+value_ == 100
+1
+93  RID 93:186
+existingKey_ == 94
+value_ == 100
+1
+94  RID 94:188
+existingKey_ == 95
+value_ == 100
+1
+95  RID 95:190
+existingKey_ == 96
+value_ == 100
+1
+96  RID 96:192
+existingKey_ == 97
+value_ == 100
+1
+97  RID 97:194
+existingKey_ == 98
+value_ == 100
+1
+98  RID 98:196
+existingKey_ == 99
+value_ == 100
+1
+99  RID 99:198
+existingKey_ == 100
+value_ == 100
+1
+100  RID 100:200
+existingKey_ == 101
+value_ == 100
+1
+101  RID 101:202
+existingKey_ == 102
+value_ == 100
+1
+102  RID 102:204
+existingKey_ == 103
+value_ == 100
+1
+103  RID 103:206
+existingKey_ == 104
+value_ == 100
+1
+104  RID 104:208
+existingKey_ == 105
+value_ == 100
+1
+105  RID 105:210
+existingKey_ == 106
+value_ == 100
+1
+106  RID 106:212
+existingKey_ == 107
+value_ == 100
+1
+107  RID 107:214
+existingKey_ == 108
+value_ == 100
+1
+108  RID 108:216
+existingKey_ == 109
+value_ == 100
+1
+109  RID 109:218
+existingKey_ == 110
+value_ == 100
+1
+110  RID 110:220
+existingKey_ == 111
+value_ == 100
+1
+111  RID 111:222
+existingKey_ == 112
+value_ == 100
+1
+112  RID 112:224
+existingKey_ == 113
+value_ == 100
+1
+113  RID 113:226
+existingKey_ == 114
+value_ == 100
+1
+114  RID 114:228
+existingKey_ == 115
+value_ == 100
+1
+115  RID 115:230
+existingKey_ == 116
+value_ == 100
+1
+116  RID 116:232
+existingKey_ == 117
+value_ == 100
+1
+117  RID 117:234
+existingKey_ == 118
+value_ == 100
+1
+118  RID 118:236
+existingKey_ == 119
+value_ == 100
+1
+119  RID 119:238
+existingKey_ == 120
+value_ == 100
+1
+120  RID 120:240
+existingKey_ == 121
+value_ == 100
+1
+121  RID 121:242
+existingKey_ == 122
+value_ == 100
+1
+122  RID 122:244
+existingKey_ == 123
+value_ == 100
+1
+123  RID 123:246
+existingKey_ == 124
+value_ == 100
+1
+124  RID 124:248
+existingKey_ == 125
+value_ == 100
+1
+125  RID 125:250
+existingKey_ == 126
+value_ == 100
+1
+126  RID 126:252
+existingKey_ == 127
+value_ == 100
+1
+127  RID 127:254
+existingKey_ == 128
+value_ == 100
+1
+128  RID 128:256
+existingKey_ == 129
+value_ == 100
+1
+129  RID 129:258
+existingKey_ == 130
+value_ == 100
+1
+130  RID 130:260
+existingKey_ == 131
+value_ == 100
+1
+131  RID 131:262
+existingKey_ == 132
+value_ == 100
+1
+132  RID 132:264
+existingKey_ == 133
+value_ == 100
+1
+133  RID 133:266
+existingKey_ == 134
+value_ == 100
+1
+134  RID 134:268
+existingKey_ == 135
+value_ == 100
+1
+135  RID 135:270
+existingKey_ == 136
+value_ == 100
+1
+136  RID 136:272
+existingKey_ == 137
+value_ == 100
+1
+137  RID 137:274
+existingKey_ == 138
+value_ == 100
+1
+138  RID 138:276
+existingKey_ == 139
+value_ == 100
+1
+139  RID 139:278
+existingKey_ == 140
+value_ == 100
+1
+140  RID 140:280
+existingKey_ == 141
+value_ == 100
+1
+141  RID 141:282
+existingKey_ == 142
+value_ == 100
+1
+142  RID 142:284
+existingKey_ == 143
+value_ == 100
+1
+143  RID 143:286
+existingKey_ == 144
+value_ == 100
+1
+144  RID 144:288
+existingKey_ == 145
+value_ == 100
+1
+145  RID 145:290
+existingKey_ == 146
+value_ == 100
+1
+146  RID 146:292
+existingKey_ == 147
+value_ == 100
+1
+147  RID 147:294
+existingKey_ == 148
+value_ == 100
+1
+148  RID 148:296
+existingKey_ == 149
+value_ == 100
+1
+149  RID 149:298
+existingKey_ == 150
+value_ == 100
+1
+150  RID 150:300
+existingKey_ == 151
+value_ == 100
+1
+151  RID 151:302
+existingKey_ == 152
+value_ == 100
+1
+152  RID 152:304
+existingKey_ == 153
+value_ == 100
+1
+153  RID 153:306
+existingKey_ == 154
+value_ == 100
+1
+154  RID 154:308
+existingKey_ == 155
+value_ == 100
+1
+155  RID 155:310
+existingKey_ == 156
+value_ == 100
+1
+156  RID 156:312
+existingKey_ == 157
+value_ == 100
+1
+157  RID 157:314
+existingKey_ == 158
+value_ == 100
+1
+158  RID 158:316
+existingKey_ == 159
+value_ == 100
+1
+159  RID 159:318
+existingKey_ == 160
+value_ == 100
+1
+160  RID 160:320
+existingKey_ == 161
+value_ == 100
+1
+161  RID 161:322
+existingKey_ == 162
+value_ == 100
+1
+162  RID 162:324
+existingKey_ == 163
+value_ == 100
+1
+163  RID 163:326
+existingKey_ == 164
+value_ == 100
+1
+164  RID 164:328
+existingKey_ == 165
+value_ == 100
+1
+165  RID 165:330
+existingKey_ == 166
+value_ == 100
+1
+166  RID 166:332
+existingKey_ == 167
+value_ == 100
+1
+167  RID 167:334
+existingKey_ == 168
+value_ == 100
+1
+168  RID 168:336
+existingKey_ == 169
+value_ == 100
+1
+169  RID 169:338
+existingKey_ == 170
+value_ == 100
+1
+170  RID 170:340
+existingKey_ == 171
+value_ == 100
+1
+171  RID 171:342
+existingKey_ == 172
+value_ == 100
+1
+172  RID 172:344
+existingKey_ == 173
+value_ == 100
+1
+173  RID 173:346
+existingKey_ == 174
+value_ == 100
+1
+174  RID 174:348
+existingKey_ == 175
+value_ == 100
+1
+175  RID 175:350
+existingKey_ == 176
+value_ == 100
+1
+176  RID 176:352
+existingKey_ == 177
+value_ == 100
+1
+177  RID 177:354
+existingKey_ == 178
+value_ == 100
+1
+178  RID 178:356
+existingKey_ == 179
+value_ == 100
+1
+179  RID 179:358
+existingKey_ == 180
+value_ == 100
+1
+180  RID 180:360
+existingKey_ == 181
+value_ == 100
+1
+181  RID 181:362
+existingKey_ == 182
+value_ == 100
+1
+182  RID 182:364
+existingKey_ == 183
+value_ == 100
+1
+183  RID 183:366
+existingKey_ == 184
+value_ == 100
+1
+184  RID 184:368
+existingKey_ == 185
+value_ == 100
+1
+185  RID 185:370
+existingKey_ == 186
+value_ == 100
+1
+186  RID 186:372
+existingKey_ == 187
+value_ == 100
+1
+187  RID 187:374
+existingKey_ == 188
+value_ == 100
+1
+188  RID 188:376
+existingKey_ == 189
+value_ == 100
+1
+189  RID 189:378
+existingKey_ == 190
+value_ == 100
+1
+190  RID 190:380
+existingKey_ == 191
+value_ == 100
+1
+191  RID 191:382
+existingKey_ == 192
+value_ == 100
+1
+192  RID 192:384
+existingKey_ == 193
+value_ == 100
+1
+193  RID 193:386
+existingKey_ == 194
+value_ == 100
+1
+194  RID 194:388
+existingKey_ == 195
+value_ == 100
+1
+195  RID 195:390
+existingKey_ == 196
+value_ == 100
+1
+196  RID 196:392
+existingKey_ == 197
+value_ == 100
+1
+197  RID 197:394
+existingKey_ == 198
+value_ == 100
+1
+198  RID 198:396
+existingKey_ == 199
+value_ == 100
+1
+199  RID 199:398
+existingKey_ == 200
+value_ == 100
+1
+200  RID 200:400
+Found 200 entries in >-scan.
+existingKey_ == 1
+value_ == 100
+1
+1  RID 1:2
+existingKey_ == 2
+value_ == 100
+1
+2  RID 2:4
+existingKey_ == 3
+value_ == 100
+1
+3  RID 3:6
+existingKey_ == 4
+value_ == 100
+1
+4  RID 4:8
+existingKey_ == 5
+value_ == 100
+1
+5  RID 5:10
+existingKey_ == 6
+value_ == 100
+1
+6  RID 6:12
+existingKey_ == 7
+value_ == 100
+1
+7  RID 7:14
+existingKey_ == 8
+value_ == 100
+1
+8  RID 8:16
+existingKey_ == 9
+value_ == 100
+1
+9  RID 9:18
+existingKey_ == 10
+value_ == 100
+1
+10  RID 10:20
+existingKey_ == 11
+value_ == 100
+1
+11  RID 11:22
+existingKey_ == 12
+value_ == 100
+1
+12  RID 12:24
+existingKey_ == 13
+value_ == 100
+1
+13  RID 13:26
+existingKey_ == 14
+value_ == 100
+1
+14  RID 14:28
+existingKey_ == 15
+value_ == 100
+1
+15  RID 15:30
+existingKey_ == 16
+value_ == 100
+1
+16  RID 16:32
+existingKey_ == 17
+value_ == 100
+1
+17  RID 17:34
+existingKey_ == 18
+value_ == 100
+1
+18  RID 18:36
+existingKey_ == 19
+value_ == 100
+1
+19  RID 19:38
+existingKey_ == 20
+value_ == 100
+1
+20  RID 20:40
+existingKey_ == 21
+value_ == 100
+1
+21  RID 21:42
+existingKey_ == 22
+value_ == 100
+1
+22  RID 22:44
+existingKey_ == 23
+value_ == 100
+1
+23  RID 23:46
+existingKey_ == 24
+value_ == 100
+1
+24  RID 24:48
+existingKey_ == 25
+value_ == 100
+1
+25  RID 25:50
+existingKey_ == 26
+value_ == 100
+1
+26  RID 26:52
+existingKey_ == 27
+value_ == 100
+1
+27  RID 27:54
+existingKey_ == 28
+value_ == 100
+1
+28  RID 28:56
+existingKey_ == 29
+value_ == 100
+1
+29  RID 29:58
+existingKey_ == 30
+value_ == 100
+1
+30  RID 30:60
+existingKey_ == 31
+value_ == 100
+1
+31  RID 31:62
+existingKey_ == 32
+value_ == 100
+1
+32  RID 32:64
+existingKey_ == 33
+value_ == 100
+1
+33  RID 33:66
+existingKey_ == 34
+value_ == 100
+1
+34  RID 34:68
+existingKey_ == 35
+value_ == 100
+1
+35  RID 35:70
+existingKey_ == 36
+value_ == 100
+1
+36  RID 36:72
+existingKey_ == 37
+value_ == 100
+1
+37  RID 37:74
+existingKey_ == 38
+value_ == 100
+1
+38  RID 38:76
+existingKey_ == 39
+value_ == 100
+1
+39  RID 39:78
+existingKey_ == 40
+value_ == 100
+1
+40  RID 40:80
+existingKey_ == 41
+value_ == 100
+1
+41  RID 41:82
+existingKey_ == 42
+value_ == 100
+1
+42  RID 42:84
+existingKey_ == 43
+value_ == 100
+1
+43  RID 43:86
+existingKey_ == 44
+value_ == 100
+1
+44  RID 44:88
+existingKey_ == 45
+value_ == 100
+1
+45  RID 45:90
+existingKey_ == 46
+value_ == 100
+1
+46  RID 46:92
+existingKey_ == 47
+value_ == 100
+1
+47  RID 47:94
+existingKey_ == 48
+value_ == 100
+1
+48  RID 48:96
+existingKey_ == 49
+value_ == 100
+1
+49  RID 49:98
+existingKey_ == 50
+value_ == 100
+1
+50  RID 50:100
+existingKey_ == 51
+value_ == 100
+1
+51  RID 51:102
+existingKey_ == 52
+value_ == 100
+1
+52  RID 52:104
+existingKey_ == 53
+value_ == 100
+1
+53  RID 53:106
+existingKey_ == 54
+value_ == 100
+1
+54  RID 54:108
+existingKey_ == 55
+value_ == 100
+1
+55  RID 55:110
+existingKey_ == 56
+value_ == 100
+1
+56  RID 56:112
+existingKey_ == 57
+value_ == 100
+1
+57  RID 57:114
+existingKey_ == 58
+value_ == 100
+1
+58  RID 58:116
+existingKey_ == 59
+value_ == 100
+1
+59  RID 59:118
+existingKey_ == 60
+value_ == 100
+1
+60  RID 60:120
+existingKey_ == 61
+value_ == 100
+1
+61  RID 61:122
+existingKey_ == 62
+value_ == 100
+1
+62  RID 62:124
+existingKey_ == 63
+value_ == 100
+1
+63  RID 63:126
+existingKey_ == 64
+value_ == 100
+1
+64  RID 64:128
+existingKey_ == 65
+value_ == 100
+1
+65  RID 65:130
+existingKey_ == 66
+value_ == 100
+1
+66  RID 66:132
+existingKey_ == 67
+value_ == 100
+1
+67  RID 67:134
+existingKey_ == 68
+value_ == 100
+1
+68  RID 68:136
+existingKey_ == 69
+value_ == 100
+1
+69  RID 69:138
+existingKey_ == 70
+value_ == 100
+1
+70  RID 70:140
+existingKey_ == 71
+value_ == 100
+1
+71  RID 71:142
+existingKey_ == 72
+value_ == 100
+1
+72  RID 72:144
+existingKey_ == 73
+value_ == 100
+1
+73  RID 73:146
+existingKey_ == 74
+value_ == 100
+1
+74  RID 74:148
+existingKey_ == 75
+value_ == 100
+1
+75  RID 75:150
+existingKey_ == 76
+value_ == 100
+1
+76  RID 76:152
+existingKey_ == 77
+value_ == 100
+1
+77  RID 77:154
+existingKey_ == 78
+value_ == 100
+1
+78  RID 78:156
+existingKey_ == 79
+value_ == 100
+1
+79  RID 79:158
+existingKey_ == 80
+value_ == 100
+1
+80  RID 80:160
+existingKey_ == 81
+value_ == 100
+1
+81  RID 81:162
+existingKey_ == 82
+value_ == 100
+1
+82  RID 82:164
+existingKey_ == 83
+value_ == 100
+1
+83  RID 83:166
+existingKey_ == 84
+value_ == 100
+1
+84  RID 84:168
+existingKey_ == 85
+value_ == 100
+1
+85  RID 85:170
+existingKey_ == 86
+value_ == 100
+1
+86  RID 86:172
+existingKey_ == 87
+value_ == 100
+1
+87  RID 87:174
+existingKey_ == 88
+value_ == 100
+1
+88  RID 88:176
+existingKey_ == 89
+value_ == 100
+1
+89  RID 89:178
+existingKey_ == 90
+value_ == 100
+1
+90  RID 90:180
+existingKey_ == 91
+value_ == 100
+1
+91  RID 91:182
+existingKey_ == 92
+value_ == 100
+1
+92  RID 92:184
+existingKey_ == 93
+value_ == 100
+1
+93  RID 93:186
+existingKey_ == 94
+value_ == 100
+1
+94  RID 94:188
+existingKey_ == 95
+value_ == 100
+1
+95  RID 95:190
+existingKey_ == 96
+value_ == 100
+1
+96  RID 96:192
+existingKey_ == 97
+value_ == 100
+1
+97  RID 97:194
+existingKey_ == 98
+value_ == 100
+1
+98  RID 98:196
+existingKey_ == 99
+value_ == 100
+1
+99  RID 99:198
+existingKey_ == 100
+value_ == 100
+1
+100  RID 100:200
+existingKey_ == 101
+value_ == 100
+1
+101  RID 101:202
+existingKey_ == 102
+value_ == 100
+1
+102  RID 102:204
+existingKey_ == 103
+value_ == 100
+1
+103  RID 103:206
+existingKey_ == 104
+value_ == 100
+1
+104  RID 104:208
+existingKey_ == 105
+value_ == 100
+1
+105  RID 105:210
+existingKey_ == 106
+value_ == 100
+1
+106  RID 106:212
+existingKey_ == 107
+value_ == 100
+1
+107  RID 107:214
+existingKey_ == 108
+value_ == 100
+1
+108  RID 108:216
+existingKey_ == 109
+value_ == 100
+1
+109  RID 109:218
+existingKey_ == 110
+value_ == 100
+1
+110  RID 110:220
+existingKey_ == 111
+value_ == 100
+1
+111  RID 111:222
+existingKey_ == 112
+value_ == 100
+1
+112  RID 112:224
+existingKey_ == 113
+value_ == 100
+1
+113  RID 113:226
+existingKey_ == 114
+value_ == 100
+1
+114  RID 114:228
+existingKey_ == 115
+value_ == 100
+1
+115  RID 115:230
+existingKey_ == 116
+value_ == 100
+1
+116  RID 116:232
+existingKey_ == 117
+value_ == 100
+1
+117  RID 117:234
+existingKey_ == 118
+value_ == 100
+1
+118  RID 118:236
+existingKey_ == 119
+value_ == 100
+1
+119  RID 119:238
+existingKey_ == 120
+value_ == 100
+1
+120  RID 120:240
+existingKey_ == 121
+value_ == 100
+1
+121  RID 121:242
+existingKey_ == 122
+value_ == 100
+1
+122  RID 122:244
+existingKey_ == 123
+value_ == 100
+1
+123  RID 123:246
+existingKey_ == 124
+value_ == 100
+1
+124  RID 124:248
+existingKey_ == 125
+value_ == 100
+1
+125  RID 125:250
+existingKey_ == 126
+value_ == 100
+1
+126  RID 126:252
+existingKey_ == 127
+value_ == 100
+1
+127  RID 127:254
+existingKey_ == 128
+value_ == 100
+1
+128  RID 128:256
+existingKey_ == 129
+value_ == 100
+1
+129  RID 129:258
+existingKey_ == 130
+value_ == 100
+1
+130  RID 130:260
+existingKey_ == 131
+value_ == 100
+1
+131  RID 131:262
+existingKey_ == 132
+value_ == 100
+1
+132  RID 132:264
+existingKey_ == 133
+value_ == 100
+1
+133  RID 133:266
+existingKey_ == 134
+value_ == 100
+1
+134  RID 134:268
+existingKey_ == 135
+value_ == 100
+1
+135  RID 135:270
+existingKey_ == 136
+value_ == 100
+1
+136  RID 136:272
+existingKey_ == 137
+value_ == 100
+1
+137  RID 137:274
+existingKey_ == 138
+value_ == 100
+1
+138  RID 138:276
+existingKey_ == 139
+value_ == 100
+1
+139  RID 139:278
+existingKey_ == 140
+value_ == 100
+1
+140  RID 140:280
+existingKey_ == 141
+value_ == 100
+1
+141  RID 141:282
+existingKey_ == 142
+value_ == 100
+1
+142  RID 142:284
+existingKey_ == 143
+value_ == 100
+1
+143  RID 143:286
+existingKey_ == 144
+value_ == 100
+1
+144  RID 144:288
+existingKey_ == 145
+value_ == 100
+1
+145  RID 145:290
+existingKey_ == 146
+value_ == 100
+1
+146  RID 146:292
+existingKey_ == 147
+value_ == 100
+1
+147  RID 147:294
+existingKey_ == 148
+value_ == 100
+1
+148  RID 148:296
+existingKey_ == 149
+value_ == 100
+1
+149  RID 149:298
+existingKey_ == 150
+value_ == 100
+1
+150  RID 150:300
+existingKey_ == 151
+value_ == 100
+1
+151  RID 151:302
+existingKey_ == 152
+value_ == 100
+1
+152  RID 152:304
+existingKey_ == 153
+value_ == 100
+1
+153  RID 153:306
+existingKey_ == 154
+value_ == 100
+1
+154  RID 154:308
+existingKey_ == 155
+value_ == 100
+1
+155  RID 155:310
+existingKey_ == 156
+value_ == 100
+1
+156  RID 156:312
+existingKey_ == 157
+value_ == 100
+1
+157  RID 157:314
+existingKey_ == 158
+value_ == 100
+1
+158  RID 158:316
+existingKey_ == 159
+value_ == 100
+1
+159  RID 159:318
+existingKey_ == 160
+value_ == 100
+1
+160  RID 160:320
+existingKey_ == 161
+value_ == 100
+1
+161  RID 161:322
+existingKey_ == 162
+value_ == 100
+1
+162  RID 162:324
+existingKey_ == 163
+value_ == 100
+1
+163  RID 163:326
+existingKey_ == 164
+value_ == 100
+1
+164  RID 164:328
+existingKey_ == 165
+value_ == 100
+1
+165  RID 165:330
+existingKey_ == 166
+value_ == 100
+1
+166  RID 166:332
+existingKey_ == 167
+value_ == 100
+1
+167  RID 167:334
+existingKey_ == 168
+value_ == 100
+1
+168  RID 168:336
+existingKey_ == 169
+value_ == 100
+1
+169  RID 169:338
+existingKey_ == 170
+value_ == 100
+1
+170  RID 170:340
+existingKey_ == 171
+value_ == 100
+1
+171  RID 171:342
+existingKey_ == 172
+value_ == 100
+1
+172  RID 172:344
+existingKey_ == 173
+value_ == 100
+1
+173  RID 173:346
+existingKey_ == 174
+value_ == 100
+1
+174  RID 174:348
+existingKey_ == 175
+value_ == 100
+1
+175  RID 175:350
+existingKey_ == 176
+value_ == 100
+1
+176  RID 176:352
+existingKey_ == 177
+value_ == 100
+1
+177  RID 177:354
+existingKey_ == 178
+value_ == 100
+1
+178  RID 178:356
+existingKey_ == 179
+value_ == 100
+1
+179  RID 179:358
+existingKey_ == 180
+value_ == 100
+1
+180  RID 180:360
+existingKey_ == 181
+value_ == 100
+1
+181  RID 181:362
+existingKey_ == 182
+value_ == 100
+1
+182  RID 182:364
+existingKey_ == 183
+value_ == 100
+1
+183  RID 183:366
+existingKey_ == 184
+value_ == 100
+1
+184  RID 184:368
+existingKey_ == 185
+value_ == 100
+1
+185  RID 185:370
+existingKey_ == 186
+value_ == 100
+1
+186  RID 186:372
+existingKey_ == 187
+value_ == 100
+1
+187  RID 187:374
+existingKey_ == 188
+value_ == 100
+1
+188  RID 188:376
+existingKey_ == 189
+value_ == 100
+1
+189  RID 189:378
+existingKey_ == 190
+value_ == 100
+1
+190  RID 190:380
+existingKey_ == 191
+value_ == 100
+1
+191  RID 191:382
+existingKey_ == 192
+value_ == 100
+1
+192  RID 192:384
+existingKey_ == 193
+value_ == 100
+1
+193  RID 193:386
+existingKey_ == 194
+value_ == 100
+1
+194  RID 194:388
+existingKey_ == 195
+value_ == 100
+1
+195  RID 195:390
+existingKey_ == 196
+value_ == 100
+1
+196  RID 196:392
+existingKey_ == 197
+value_ == 100
+1
+197  RID 197:394
+existingKey_ == 198
+value_ == 100
+1
+198  RID 198:396
+existingKey_ == 199
+value_ == 100
+1
+199  RID 199:398
+existingKey_ == 200
+value_ == 100
+1
+200  RID 200:400
+-rw-rw----+ 1 Jichan None 16384 Apr 23 11:24 testrel.0
+-rw-rw----+ 1 Jichan None 12288 Apr 23 10:30 testrel.10
+-rw-rw----+ 1 Jichan None 12288 Apr 23 10:30 testrel.5
+Found 200 entries in >=-scan.
+Doing "ls -l *testrel*"
+Passed Test 4
+
+Ending IX component test.
+
