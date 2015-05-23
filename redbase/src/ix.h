@@ -39,7 +39,7 @@ public:
 
 private:
     int valid_;
-    IX_FileHdr *hdr_;                                // file header
+    IX_FileHdr *hdr_;                               // file header
     int hdrModified_;                               // dirty flag for file hdr
     PF_FileHandle PFfileHandle_;
     int keylen_;                                    // Length of each key (composed of data and RID) in B+ tree
@@ -65,7 +65,6 @@ private:
     void DeleteEntryFromNonLeaf(IX_NodeHdr *nodeHdr, char *nodeData, int keyIndex);
     RC DeleteEntryFromLeaf(char *deletedKey, IX_LeafHdr *leafHdr, char *leafData);
     RC AdjustSiblingPointers(IX_LeafHdr *leafHdr);
-
 };
 
 //
@@ -96,16 +95,16 @@ private:
     ClientHint pinHint_;
 
     int valid_;
-    int scanComplete_;
+    int scanComplete_;      // Flag for whether scan is complete or active
 
-    int currentPage_;
-    int currentKeyIndex_;
-    char *nodeData_;
-    int keylen_;
+    int currentPage_;       // PageNum of the page where current scan pointer is
+    int currentKeyIndex_;   // Index of the key that current scan pointer points to
+    char *nodeData_;        // Data of the page being scanned by current scan pointer
+    int keylen_;            // Length of each key in B+ tree
 
-    char *lastKeySeen_;
-    int nextLeaf_;
-    int firstEntryScanned_;
+    char *lastKeySeen_;     // Key that was last seen
+    int nextLeaf_;          // PageNum of the next leaf page
+    int firstEntryScanned_; // Flag for whether first entry has been scanned (Used for initializing scan pointer)
     
     RC FetchNextPage(PageNum next);
     int ConditionMet(char *key1, char *key2);
@@ -152,7 +151,7 @@ void IX_PrintError(RC rc);
 #define IX_EOF                   (START_IX_WARN + 5) // no more indices to be scanned
 #define IX_SCANPARAMINVALID      (START_IX_WARN + 6) // parameters for scanning are invalid
 #define IX_SCANOPEN              (START_IX_WARN + 7) // index scan is still open
-#define IX_ENTRYNOTFOUND           (START_IX_WARN + 8) // record couldn't be found for deletion
+#define IX_ENTRYNOTFOUND         (START_IX_WARN + 8) // record couldn't be found for deletion
 #define IX_DUPLICATEENTRY        (START_IX_WARN + 9) // there is a duplicate entry
 
 #define IX_LASTWARN        IX_DUPLICATEENTRY

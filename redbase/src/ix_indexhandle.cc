@@ -1,6 +1,59 @@
 #include "ix_internal.h"
 #include "comp.h"
 
+
+/*** HELPER FUNCTIONS ****/
+
+/* Writes key at address indicated by pos */
+void IX_IndexHandle::WriteKey(char *pos, char *key) { 
+    memcpy(pos, key, keylen_);
+}
+
+/* Writes child ptr at address indicated by pos */
+void WritePtr(char *pos, PageNum ptr) { 
+    memcpy(pos, &ptr, sizeof(PageNum));
+}
+
+/* Read child pointer into ptr at address indicated by pos */
+void GetPtr(char *pos, PageNum &ptr) {
+    memcpy(&ptr, pos, sizeof(PageNum));
+}
+
+/* Get key at keyIndex in an internal node */
+char* IX_IndexHandle::GetNthKeyInternal(char *nodeData, int keyIndex) {
+    return nodeData + keyIndex * (keylen_ + sizeof(PageNum));
+}
+
+/* Get key at keyIndex in a leaf node */
+char* IX_IndexHandle::GetNthKeyLeaf(char *nodeData, int keyIndex) {
+    return nodeData + keyIndex * (keylen_);
+}
+
+/* Iterates through keys in a non-leaf node and returns the subtree pointer to be followed for newKey
+ * Upon return, keyIndex points to the key to the right of the subtree pointer
+ */
+PageNum IX_IndexHandle::FindSubtreePtr(char *newKey, IX_NodeHdr *nodeHdr, char *nodeData, int &keyIndex) {
+    PageNum subtree = nodeHdr->firstChild;
+    keyIndex = 0;
+    char *key = nodeData;
+
+    // If there is only one child to be followed or if key is smaller than the first key, return the first child
+    if (nodeHdr->numChild == 1 || CompareKey(newKey, key, 0, hdr_->attrType, hdr_->attrLength) < 0) return subtree;
+
+    // Iterate through each key; stop if a key greater than newKey is found
+    GetPtr(key+keylen_, subtree);
+    for (keyIndex = 1; keyIndex < nodeHdr->numKeys; keyIndex++) {
+        key = key + keylen_ + sizeof(PageNum);
+        if (CompareKey(newKey, key, 0, hdr_->attrType, hdr_->attrLength) < 0) return subtree;
+        GetPtr(key+keylen_, subtree);
+    }
+
+    return subtree;
+}
+
+
+/*** PUBLIC FUNCTIONS ***/
+
 IX_IndexHandle::IX_IndexHandle()
 {
     valid_ = 0;
@@ -17,17 +70,20 @@ RC IX_IndexHandle::InsertEntry(void *pData, const RID &rid)
 {
     if (!valid_) return IX_FILEINVALID;
     if (pData == NULL) return IX_NULLDATA;
- 
+
+    // Create a B+ tree key by concatenating pData and rid 
     char key[keylen_];
+    memset(key, 0, keylen_);
     memcpy(key, pData, hdr_->attrLength);
     memcpy(key + hdr_->attrLength, &rid, sizeof(RID));
 
+    // Variables passed across recursive calls
     char newChildData[keylen_];
     PageNum newChild = -1;
 
+    // Look for a place to insert beginning at the root
     RC rc = InsertEntryToNode(key, hdr_->rootPage, newChild, newChildData);
     if (rc) return rc;
-    //std::cout << "ERROR: " << rc << std::endl;
     
     hdr_->numKeys++;
     hdrModified_ = 1;
@@ -40,10 +96,15 @@ RC IX_IndexHandle::DeleteEntry(void *pData, const RID &rid)
     if (!valid_) return IX_FILEINVALID;
     if (pData == NULL) return IX_NULLDATA;
 
+    // Create a B+ key by concatenating pData and rid 
     char key[keylen_];
     memcpy(key, pData, hdr_->attrLength);
     memcpy(key + hdr_->attrLength, &rid, sizeof(RID));
+
+    // Variables passed across recursive calls
     int childDeleted = -1;
+
+    // Look for entry to delete beginning at the root
     RC rc = DeleteEntryFromNode(key, hdr_->rootPage, childDeleted);
     if (rc) return rc;
 
@@ -60,18 +121,7 @@ RC IX_IndexHandle::ForcePages()
 }
 
 
-/* Writes key at address indicated by pos */
-void IX_IndexHandle::WriteKey(char *pos, char *key) { 
-    memcpy(pos, key, keylen_);
-}
-
-void WritePtr(char *pos, PageNum ptr) { 
-    memcpy(pos, &ptr, sizeof(PageNum));
-}
-
-void GetPtr(char *pos, PageNum &ptr) {
-    memcpy(&ptr, pos, sizeof(PageNum));
-}
+/*** INSERTION HELPER FUNCTIONS ***/
 
 RC IX_IndexHandle::InsertEntryToNode(
     char *key, PageNum currentNode, PageNum &newChild, char *newChildData) 
@@ -85,34 +135,35 @@ RC IX_IndexHandle::InsertEntryToNode(
     page.GetData(nodeData);
     IX_NodeHdr *nodeHdr = (IX_NodeHdr *) nodeData;
 
+    // Initialize the first leaf if there is zero leaf page
     if (nodeHdr->nodeType == root && nodeHdr->numChild == 0) {
-        //std::cout << "Initialize first leaf" << std::endl;
         rc = InitializeFirstLeaf(nodeHdr->firstChild);
         if (rc) return rc;
         nodeHdr->numChild++;
     }
 
+    // For root & internal nodes
     if (nodeHdr->nodeType == root || nodeHdr->nodeType == internal) {
         nodeData += sizeof(IX_NodeHdr);
 
-        int keyIndex; // key to the right of the subtree pointer that is to be followed; Position where a new key will be inserted if child is split
+        /*  keyIndex = key to the right of the subtree pointer that is to be followed
+            It is the position where a key will be inserted if subtree is split */
+        int keyIndex; 
         PageNum subtree = FindSubtreePtr(key, nodeHdr, nodeData, keyIndex);
-        //std::cout << "Subtree found: " << subtree << std::endl;
 
+        // Recursively attempt to insert to child node
         rc = InsertEntryToNode(key, subtree, newChild, newChildData);
         if (rc) return rc;
 
         /* If the subtree was split */
         if (newChild != -1) {
-            //std::cout << "Child split" << std::endl;
-            //std::cout << "Child pointer: " << newChild << std::endl;
-            //std::cout << "Child key: " << *(int *)newChildData << std::endl;
             /* Insert the first key of the new child to the current non-leaf node */
             rc = InsertEntryToNonLeaf(newChild, newChildData, nodeHdr, nodeData, keyIndex);
             if (rc) return rc;
         }
+    
+    // For leaf nodes
     } else if (nodeHdr->nodeType == leaf) {
-        //std::cout << "Inserted into leaf " << std::endl;
         IX_LeafHdr *leafHdr = (IX_LeafHdr *) nodeData;
         nodeData += sizeof(IX_LeafHdr);
 
@@ -120,15 +171,12 @@ RC IX_IndexHandle::InsertEntryToNode(
         if (rc) return rc;
     }
 
-    //std::cout << "NumKeys found: " << nodeHdr->numKeys << std::endl;
-
-    //std::cout << "CurrentNode " << currentNode << std::endl;
     rc = PFfileHandle_.MarkDirty(currentNode);
     if (rc) return rc;
-    rc = PFfileHandle_.UnpinPage(currentNode);
-    return rc;
+    return PFfileHandle_.UnpinPage(currentNode);
 }
 
+/* Allocates the very first leaf and initializes a linked list of leaf nodes */
 RC IX_IndexHandle::InitializeFirstLeaf(PageNum &newLeafPageNum)
 {
     /* Allocate a new page for first leaf node */
@@ -154,13 +202,6 @@ RC IX_IndexHandle::InitializeFirstLeaf(PageNum &newLeafPageNum)
     return PFfileHandle_.UnpinPage(newLeafPageNum);
 }
 
-char* IX_IndexHandle::GetNthKeyInternal(char *nodeData, int keyIndex) {
-    return nodeData + keyIndex * (keylen_ + sizeof(PageNum));
-}
-
-char* IX_IndexHandle::GetNthKeyLeaf(char *nodeData, int keyIndex) {
-    return nodeData + keyIndex * (keylen_);
-}
 
 /* Insert newChildData (first key of newChild) and newChild pointer at keyIndex of current node 
  * Upon return, 
@@ -171,14 +212,14 @@ RC IX_IndexHandle::InsertEntryToNonLeaf(
     PageNum &newChild, char *newChildData, IX_NodeHdr *nodeHdr, char *nodeData, int keyIndex) 
 {
     RC rc;
-    /* If there is room in the non-leaf node */
+    // If there is room in the non-leaf node, just insert
     if (nodeHdr->numKeys < hdr_->maxKeysInternal) {
         InsertEntryToNonLeafHelper(newChild, newChildData, nodeHdr, nodeData, keyIndex);
         newChild = -1;
         return 0;
     }
 
-    /* If there is not enough room, allocate a new node and split */
+    // If there is not enough room, split
     PF_PageHandle newNode;
     rc = PFfileHandle_.AllocatePage(newNode);
     if (rc) return rc;
@@ -188,25 +229,26 @@ RC IX_IndexHandle::InsertEntryToNonLeaf(
     newNode.GetPageNum(newNodePageNum);
     newNode.GetData(newNodeData);
 
-    /* Initialize header for the new node */
-    IX_NodeHdr *newNodeHdr = (IX_NodeHdr *) newNodeData;
-    newNodeData += sizeof(IX_NodeHdr);
-    newNodeHdr->nodeType = internal;
     int middleKey = hdr_->maxKeysInternal/2;
     int firstKeyMoved = middleKey + 1;
     int numKeysMoved = hdr_->maxKeysInternal - firstKeyMoved;
+
+    // Initialize header for the new node
+    IX_NodeHdr *newNodeHdr = (IX_NodeHdr *) newNodeData;
+    newNodeData += sizeof(IX_NodeHdr);
+    newNodeHdr->nodeType = internal;
     newNodeHdr->numKeys = numKeysMoved;
     newNodeHdr->numChild = numKeysMoved + 1;
     GetPtr(GetNthKeyInternal(nodeData, firstKeyMoved) - sizeof(PageNum), newNodeHdr->firstChild);
 
-    /* Update header for the original node */
+    // Update header for the original node
     nodeHdr->numKeys -= (numKeysMoved + 1);
     nodeHdr->numChild = nodeHdr->numKeys + 1;
 
-    /* Copy keys to the new node */
+    // Copy half of the keys to the new node
     memcpy(newNodeData, GetNthKeyInternal(nodeData, firstKeyMoved), numKeysMoved * (keylen_ + sizeof(PageNum)));
     
-    /* Insert the new key */
+    // Insert the new key to either of two split nodes
     if (keyIndex <= middleKey) {
         InsertEntryToNonLeafHelper(newChild, newChildData, nodeHdr, nodeData, keyIndex);
     } else {
@@ -219,39 +261,45 @@ RC IX_IndexHandle::InsertEntryToNonLeaf(
     rc = PFfileHandle_.UnpinPage(newNodePageNum);
     if (rc) return rc;
     
-    /* If the root was split */
+    // If the root was split, allocate a new root
     if (nodeHdr->nodeType == root) {
         nodeHdr->nodeType = internal;
         rc = AllocateNewRoot(newNodePageNum, newNodeData);
         if (rc) return rc;
     }
 
-    /* Copy the middle key between two split nodes to be inserted to the parent node */
+    // Copy up the middle key between two split nodes to be inserted to the parent node
     newNode.GetPageNum(newChild);
     memcpy(newNodeData, GetNthKeyInternal(nodeData, middleKey), keylen_);
 
     return 0;
 }
 
+/* When the root node becomes split, allocate a new root with two split nodes as its child */
 RC IX_IndexHandle::AllocateNewRoot(PageNum secondChild, char *secondChildKey)
 {
+    // Allocate a new root
     PF_PageHandle newRoot;
     RC rc = PFfileHandle_.AllocatePage(newRoot);
     if (rc) return rc;
-
     PageNum newRootPageNum;
     char *newRootData;
     newRoot.GetPageNum(newRootPageNum);
     newRoot.GetData(newRootData);
 
+    // Initialize new root
     IX_NodeHdr *newRootHdr = (IX_NodeHdr *) newRootData;
     newRootHdr->numKeys = 1;
     newRootHdr->numChild = 2;
     newRootHdr->nodeType = root;
+
+    // Write the first key and two children pointers
     newRootHdr->firstChild = hdr_->rootPage;
     char *firstKey = newRootData + sizeof(IX_NodeHdr);
     WriteKey(firstKey, secondChildKey);
     WritePtr(firstKey + keylen_, secondChild);
+
+    // Write the new root to index file header
     hdr_->rootPage = newRootPageNum;
 
     rc = PFfileHandle_.MarkDirty(newRootPageNum);
@@ -259,27 +307,16 @@ RC IX_IndexHandle::AllocateNewRoot(PageNum secondChild, char *secondChildKey)
     return PFfileHandle_.UnpinPage(newRootPageNum);
 }
 
+/* Write key (and child pointer to its right) onto a non-leaf node at keyIndex*/
 void IX_IndexHandle::InsertEntryToNonLeafHelper(PageNum ptr, char *key, IX_NodeHdr *nodeHdr, char *nodeData, int keyIndex) {
-    //std::cout << "KEY INDEX TO BE INSERTED:" << keyIndex << std::endl;
-
     char *pos = GetNthKeyInternal(nodeData, + keyIndex); // position to be inserted
     if (keyIndex != nodeHdr->numKeys) {
-        memmove(pos + keylen_ + sizeof(PageNum), pos, (keylen_ + sizeof(PageNum))*(nodeHdr->numKeys - keyIndex)); // Shift keys to the right by one
+        // Shift keys to the right by one
+        memmove(pos + keylen_ + sizeof(PageNum), pos, (keylen_ + sizeof(PageNum))*(nodeHdr->numKeys - keyIndex));
     }
     WriteKey(pos, key);
     WritePtr(pos+keylen_, ptr);
 
-    /*
-    for (int i = 0; i < nodeHdr->numKeys; i++) {
-        char *k = nodeData + i*(keylen_ + sizeof(PageNum));
-        int subtree;
-        GetPtr(k-sizeof(PageNum), subtree);
-        //int subtree;
-        //memcpy(&subtree, k -sizeof(PageNum), sizeof(PageNum));
-        std::cout << "subtree" << i << ":" << subtree << std::endl;  
-        std::cout << "key" << i << ":" << *((int *)k) << std::endl;  
-    }
-    */
     nodeHdr->numKeys++;
     nodeHdr->numChild++;
 }
@@ -288,7 +325,7 @@ RC IX_IndexHandle::InsertEntryToLeaf(
     char *newKey, IX_LeafHdr *leafHdr, char *leafData, PageNum &newChild, char *newChildData, PageNum currentNode)
 {
     RC rc;
-    /* If there is room in the leaf node */
+    /* If there is room in the leaf node, just insert */
     if (leafHdr->numKeys < hdr_->maxKeysLeaf) {
         rc = InsertEntryToLeafHelper(newKey, leafHdr, leafData);
         if (rc) return rc;
@@ -296,7 +333,7 @@ RC IX_IndexHandle::InsertEntryToLeaf(
         return 0;
     }
 
-    /* If there is not enough room, allocate a new leaf node and split */
+    /* If there is not enough room, split */
     PF_PageHandle newLeaf;
     rc = PFfileHandle_.AllocatePage(newLeaf);
     if (rc) return rc;
@@ -304,12 +341,13 @@ RC IX_IndexHandle::InsertEntryToLeaf(
     newLeaf.GetData(newLeafData);
     newLeaf.GetPageNum(newChild);
 
+    int firstKeyMoved = hdr_->maxKeysLeaf/2;
+    int numKeysMoved = hdr_->maxKeysLeaf - firstKeyMoved;
+
     /* Initialize header for the new leaf */
     IX_LeafHdr *newLeafHdr = (IX_LeafHdr *) newLeafData;
     newLeafData += sizeof(IX_NodeHdr);
     newLeafHdr->nodeType = leaf;
-    int firstKeyMoved = hdr_->maxKeysLeaf/2;
-    int numKeysMoved = hdr_->maxKeysLeaf - firstKeyMoved;
     newLeafHdr->numKeys = numKeysMoved;
 
     /* Adjust sibling pointers */
@@ -332,29 +370,17 @@ RC IX_IndexHandle::InsertEntryToLeaf(
         rc = PFfileHandle_.UnpinPage(nextLeafPageNum);
         if (rc) return rc;
     }
-    // /* Node 1 */
-    // std::cout << "NODE1 PREV:" << leafHdr->prev << std::endl;
-    // std::cout << "NODE1 NEXT:" << leafHdr->next << std::endl;
-    // std::cout << "NODE2:" << newChild << std::endl;
-    // /* Node 2 */
-    // std::cout << "NODE2 PREV:" << newLeafHdr->prev << std::endl;
-    // std::cout << "NODE2 NEXT:" << newLeafHdr->next << std::endl;
-    // if (newLeafHdr->next != IX_INDEX_LIST_END) {
-    // /* Node 3 */
-    // std::cout << "NODE3 PREV:" << nextLeafHdr->prev << std::endl;
-    // std::cout << "NODE3 NEXT:" << nextLeafHdr->next << std::endl;
-    // }
-    /* Update # of keys for the original leaf */
+
     leafHdr->numKeys -= numKeysMoved;
 
-    /* Copy keys to the new leaf */
+    /* Copy half of the keys to the new leaf */
     memcpy(newLeafData, GetNthKeyLeaf(leafData, firstKeyMoved), numKeysMoved * keylen_);
     
-    /* Pass the first key of the new leaf to the parent node */
+    /* Copy up the first key of the new leaf to be inserted to the parent node */
     newLeaf.GetPageNum(newChild);
     memcpy(newChildData, newLeafData, keylen_);
 
-    /* Insert the new key into an appropriate node */
+    /* Insert the new key into either of two split nodes */
     if (CompareKey(newKey, newChildData, 0, hdr_->attrType, hdr_->attrLength) < 0) {
         rc =InsertEntryToLeafHelper(newKey, leafHdr, leafData);
         if (rc) return rc;
@@ -369,50 +395,35 @@ RC IX_IndexHandle::InsertEntryToLeaf(
 }
 
 RC IX_IndexHandle::InsertEntryToLeafHelper(char *newKey, IX_LeafHdr *leafHdr, char *leafData) {
-    char *insertPos = leafData; int i;
+    int i;
+    char *insertPos = leafData;
     
     if (leafHdr->numKeys > 0) {
         char * existingKey;
-        /* Iterate through existing keys to find appropriate position */
+        // Iterate through existing keys to find appropriate position
         for (i = 0; i < leafHdr->numKeys; i++) {
             existingKey = GetNthKeyLeaf(leafData, i);
+            // When there is an identical entry, return error
             if (CompareKey(newKey, existingKey, 0, hdr_->attrType, hdr_->attrLength) == 0) return IX_DUPLICATEENTRY;
             if (CompareKey(newKey, existingKey, 0, hdr_->attrType, hdr_->attrLength) < 0) {
                 insertPos = existingKey;
-                /* If key is being inserted in between existing keys, shift keys to the right */
+                // If key is being inserted in between existing keys, shift keys to the right
                 memmove(insertPos + keylen_, insertPos, (leafHdr->numKeys-i)*keylen_);
                 break;
             }
         }
-        /* If key being inserted is greater than all keys in this node, write to the next key slot */
-        if (i == leafHdr->numKeys) {
-            //std::cout << "this case?" << std::endl;
-            insertPos = GetNthKeyLeaf(leafData, leafHdr->numKeys);
-        }
+        // If key being inserted at the leaf's end
+        if (i == leafHdr->numKeys) insertPos = GetNthKeyLeaf(leafData, leafHdr->numKeys);
     }
+
     WriteKey(insertPos, newKey);
     leafHdr->numKeys++;
     return 0;
 }
 
-/* Iterates through keys in a non-leaf node to find the subtree pointer to be followed
- * Upon return, keyIndex points to the key to the right of the subtree pointer
- */
-PageNum IX_IndexHandle::FindSubtreePtr(char *newKey, IX_NodeHdr *nodeHdr, char *nodeData, int &keyIndex) {
-    PageNum subtree = nodeHdr->firstChild;
-    keyIndex = 0;
-    char *key = nodeData;
-    if (nodeHdr->numChild == 1 || CompareKey(newKey, key, 0, hdr_->attrType, hdr_->attrLength) < 0) return subtree;
 
-    GetPtr(key+keylen_, subtree);
-    for (keyIndex = 1; keyIndex < nodeHdr->numKeys; keyIndex++) {
-        key = key + keylen_ + sizeof(PageNum);
-        if (CompareKey(newKey, key, 0, hdr_->attrType, hdr_->attrLength) < 0) return subtree;
-        GetPtr(key+keylen_, subtree);
-    }
 
-    return subtree;
-}
+/*** DELETION HELPER FUNCTIONS ***/
 
 RC IX_IndexHandle::DeleteEntryFromNode(
     char *key, PageNum currentNode, int &childDeleted)
@@ -420,30 +431,33 @@ RC IX_IndexHandle::DeleteEntryFromNode(
     RC rc;
     PF_PageHandle page;
     rc = PFfileHandle_.GetThisPage(currentNode, page);
-    if (rc) {
-       //std::cout << currentNode << std::endl;
-       return rc;
-    }
+    if (rc) return rc;
+    
     char *nodeData;
     page.GetData(nodeData);
     IX_NodeHdr * nodeHdr = (IX_NodeHdr *)nodeData;
     
+    // For root and internal nodes
     if (nodeHdr->nodeType == root || nodeHdr->nodeType == internal) {
         nodeData += sizeof(IX_NodeHdr);
 
-        int keyIndex; // key to the right of the subtree pointer that is to be followed; Position where a key will be deleted if all children are deleted
+        /*  keyIndex == key to the right of the subtree pointer that is to be followed
+            Position where a key will be deleted if all children are deleted
+         */
+        int keyIndex;
         PageNum subtree = FindSubtreePtr(key, nodeHdr, nodeData, keyIndex);
         rc = DeleteEntryFromNode(key, subtree, childDeleted);
         if (rc) return rc;
 
-        /* If the child was deleted */
+        // If the child was deleted, delete its associated key from current node
         if (childDeleted == 1) {
-            //std::cout << "child deleted" << std::endl;
             DeleteEntryFromNonLeaf(nodeHdr, nodeData, keyIndex);
             rc = PFfileHandle_.MarkDirty(currentNode);
             if (rc) return rc;
+
+            // When there are no more children in this node, delete it
             if (nodeHdr->numChild == 0 && nodeHdr->nodeType == internal) {
-                childDeleted = 1;
+                childDeleted = 1; // Indicate to parent that the current node was deleted
                 rc = PFfileHandle_.UnpinPage(currentNode);
                 if (rc) return rc;
                 return PFfileHandle_.DisposePage(currentNode);
@@ -452,7 +466,7 @@ RC IX_IndexHandle::DeleteEntryFromNode(
             }
         }
 
-    /* If we reached leaf, return with found set to current node*/
+    // If we reached leaf, delete the entry from this leaf
     } else if (nodeHdr->nodeType == leaf) {
         IX_LeafHdr *leafHdr = (IX_LeafHdr *) nodeData;
         nodeData += sizeof(IX_LeafHdr);
@@ -462,10 +476,10 @@ RC IX_IndexHandle::DeleteEntryFromNode(
         rc = PFfileHandle_.MarkDirty(currentNode);
         if (rc) return rc;
 
+        // When there are no more keys in this node, delete it
         if (leafHdr->numKeys == 0) {
-            //std::cout << "DELETED LEAF:" << currentNode << std::endl;
             childDeleted = 1;
-            rc = AdjustSiblingPointers(leafHdr);
+            rc = AdjustSiblingPointers(leafHdr); // Indicate to parent that the current node was deleted
             if (rc) return rc;
             rc = PFfileHandle_.UnpinPage(currentNode);
             if (rc) return rc;
@@ -482,22 +496,6 @@ RC IX_IndexHandle::DeleteEntryFromNode(
 void IX_IndexHandle::DeleteEntryFromNonLeaf(
     IX_NodeHdr *nodeHdr, char *nodeData, int keyIndex)
 {
-/*    for (int i = 0; i < nodeHdr->numKeys; i++) {
-        char *k = nodeData + i*(keylen_ + sizeof(PageNum));
-        int subtree;
-        GetPtr(k-sizeof(PageNum), subtree);
-        //int subtree;
-        //memcpy(&subtree, k -sizeof(PageNum), sizeof(PageNum));
-        std::cout << "subtree" << i << ":" << subtree << std::endl;  
-        std::cout << "key" << i << ":" << *((int *)k) << std::endl;
-        if (i == nodeHdr->numKeys - 1) {
-            k = nodeData + (i+1)*(keylen_ + sizeof(PageNum));
-            GetPtr(k-sizeof(PageNum), subtree);
-            std::cout << "subtreelast" << ":" << subtree << std::endl;
-        }
-    }
-    std::cout << "*************" << std::endl;*/
-
     /* When deleting the first key; if there is only 1 child, skip since there is no key to delete */
     if (keyIndex == 0 && nodeHdr->numChild > 1) {
         GetPtr(nodeData + keylen_, nodeHdr->firstChild);
@@ -511,40 +509,26 @@ void IX_IndexHandle::DeleteEntryFromNonLeaf(
         char *deletedKey = GetNthKeyInternal(nodeData, keyIndex);
         memmove(deletedKey - sizeof(PageNum), deletedKey + keylen_, (nodeHdr->numKeys - keyIndex - 1) * (keylen_ + sizeof(PageNum)) + sizeof(PageNum));
     }
+
     if(nodeHdr->numKeys >= 1) nodeHdr->numKeys--;
     nodeHdr->numChild--;
-
-/*    for (int i = 0; i < nodeHdr->numKeys; i++) {
-        char *k = nodeData + i*(keylen_ + sizeof(PageNum));
-        int subtree;
-        GetPtr(k-sizeof(PageNum), subtree);
-        //int subtree;
-        //memcpy(&subtree, k -sizeof(PageNum), sizeof(PageNum));
-        std::cout << "subtree" << i << ":" << subtree << std::endl;  
-        std::cout << "key" << i << ":" << *((int *)k) << std::endl;
-        if (i == nodeHdr->numKeys - 1) {
-            k = nodeData + (i+1)*(keylen_ + sizeof(PageNum));
-            GetPtr(k-sizeof(PageNum), subtree);
-            std::cout << "subtreelast" << ":" << subtree << std::endl;
-        }
-    }*/
-
 }
 
-/* Delete entry (data, RID) from a leaf node */
+/* Delete index entry from a leaf node */
 RC IX_IndexHandle::DeleteEntryFromLeaf(
     char *deletedKey, IX_LeafHdr *leafHdr, char *leafData)
 {
     int found = 0;
+    // Iterate through each key to find the identical one to deletedKey
     for (int i = 0; i < leafHdr->numKeys; i++) {
         char *existingKey = GetNthKeyLeaf(leafData, i);
         if (CompareKey(deletedKey, existingKey, 0, hdr_->attrType, hdr_->attrLength) == 0) {
-            memmove(existingKey, existingKey + keylen_, (leafHdr->numKeys - i - 1) * keylen_);
+            memmove(existingKey, existingKey + keylen_, (leafHdr->numKeys - i - 1) * keylen_); // Left-shift keys to the right to delete entry
             found = 1;
             break;
         }
     }
-    if (!found) return IX_ENTRYNOTFOUND;
+    if (!found) return IX_ENTRYNOTFOUND; // When no identical index entry was found
     leafHdr->numKeys--;
     return 0;
 }
@@ -553,9 +537,8 @@ RC IX_IndexHandle::DeleteEntryFromLeaf(
 RC IX_IndexHandle::AdjustSiblingPointers(IX_LeafHdr *leafHdr)
 {
     RC rc;
-    //std::cout << leafHdr->next << std::endl;
-    //std::cout << leafHdr->prev << std::endl;
 
+    // Adjust prev pointer of the next leaf
     if (leafHdr->next != IX_INDEX_LIST_END) {
         PF_PageHandle nextPage; char *nextNodeData; PageNum nextNodePageNum;
         rc = PFfileHandle_.GetThisPage(leafHdr->next, nextPage);
@@ -572,6 +555,7 @@ RC IX_IndexHandle::AdjustSiblingPointers(IX_LeafHdr *leafHdr)
         if (rc) return rc;
     }
 
+    // Adjust next pointer of the previous leaf
     if (leafHdr->prev != IX_INDEX_LIST_BEGIN) {
         PF_PageHandle prevPage; char *prevNodeData; PageNum prevNodePageNum;
         rc = PFfileHandle_.GetThisPage(leafHdr->prev, prevPage);

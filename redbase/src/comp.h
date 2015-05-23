@@ -9,6 +9,7 @@
 #include "redbase.h"
 #include "rm_rid.h"
 
+/* Global functions used for various comparisons */
 int StringCompare(char *key, void *val, int n);
 int IntCompare(char *key, void *val, int n);
 int FloatCompare(char *key, void *val, int n);

@@ -1,0 +1,53 @@
+Jichan Park
+jcpark
+CS346 Project 1
+
+[ DESIGN CHOICES ]
+(1) File initialization
+When a file is created (RM_Manager::CreateFile), parameters for data layout are calculated.
+Based on the given record size, code determines maximum # of records per page and the size of bitmap used to track slot availability. 
+These parameters are saved in the first page of each file as RM_FileHdr.
+
+(2) Updating file header
+When a file is opened, file header is saved in RM_FileHdr so that file header page can be unpinned from buffer pool. 
+When file header is modified, hdrModified_ flag is set. When closing file and this flag is set, the changed file header
+is flushed to the header page of the file on disk. 
+
+(3) Page layout
+Each page contains a header, followed a bitmap that indicates whether a particular slot int he page is free.
+Header of each page (RM_PageHdr) contains # of records and PageNum of next page with a free slot. 
+The size of bitmap is allocated dynamically based on record size when a file is created.
+
+Each record slot can be accessed for get/insert/update by (start of pageData + size of RM_PageHdr and bitmap + slot # * recordSize)
+As mentioned in (1) and (2), size of bitmap and recordSize can be accessed from file header kept in RM_FileHDr. 
+THe availability of a given record slot can be checked or modified by using bit manipulations on the bitmap. 
+
+(4) Keeping track of pages with free slots
+firstFree in file header points to the head of a linked list of pages with at least one free slot. 
+nextFree in each page header points to the next page in the list.
+It is set to RM_PAGE_FULL when the page is full and RM_PAGE_LIST_END if there is no more empty pages in the list after the current page.
+
+Records are inserted to the first free page on the list. 
+When that page is filled up, it is removed from the linked list. 
+When a record is deleted from a page that was full, the page now is free and is inserted to the head of linked list. 
+
+(5) File scanning
+File scanning is done by iteratively pinning each page, going through all records for condition check, and unpinning each page before fetching the next page.
+
+(6) Error checking
+Each RM Object (such as RM_FileHandle, RM_FileScan, RM_Record, RID) has a valid_ flag that is set only when it has been properly initialized
+(either at construction or by being passed to another function). When a member function is called on an RM instance with valid_ flag off, the function returns an error code. 
+
+Error codes are also returned when invalid parameters are provided or when warnings/errors from PF component are raised. 
+
+[ TESTING ]
+I fetched several shared tests from CS346 bin and ran it with my RM component to catch any bugs.
+I had to modify some test source files because some code in it assumed a slightly modified RM interface, rather than the skeleton interface provided. 
+
+Especially helpful tests were rm_testyh.cc, rm_testyh_random.cc, rm_testrecsizes.cc and rm_testkpg.cc
+The tests allowed me to fix the code so that it handles subtle edge cases such as invalid file scan parameters / record sizes and
+fixing bugs such as forgetting to unpin a certain page, writing incorrect logic for scanning, and incorrectly updating linked list of free pages.
+
+I ran all tests under valgrind to make sure there is no invalid memory access/write.
+
+Although the shared tests are very comprehensive, I wrote a couple of my own tests (rm_test.cc) to test what I think was missing. 

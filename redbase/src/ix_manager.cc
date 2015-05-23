@@ -15,19 +15,20 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo,
     if (fileName == NULL) return IX_FILENAMENULL;
 
 	RC rc;
+    // Check if index creation parameters are valid
 	if (indexNo < 0 || attrLength <= 0 || attrLength > MAXSTRINGLEN ||
 		attrType < 0 || attrType > STRING || 
 		((attrType == FLOAT || attrType == INT) && (attrLength != NUMLEN))) {
 		return IX_CREATEPARAMINVALID;
 	}
 
+    // Create an index file by concatenating record fileName and indexNo
     char indexfileName [strlen(fileName) + 15];
     sprintf(indexfileName, "%s.%d", fileName, indexNo);
-
 	rc = pfm_->CreateFile(indexfileName);
 	if (rc) return rc;
 
-	/* Fill out Index File Header */
+	// Fill out Index File Header
 	IX_FileHdr fileHdr;
     fileHdr.maxKeysInternal = (PF_PAGE_SIZE - sizeof(IX_NodeHdr)) / (attrLength + sizeof(RID) + sizeof(PageNum));
     fileHdr.maxKeysLeaf = (PF_PAGE_SIZE - sizeof(IX_LeafHdr)) / (attrLength + sizeof(RID));
@@ -35,7 +36,7 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo,
     fileHdr.attrLength = attrLength;
     fileHdr.numKeys = 0;
 
-    /* Open the new file and allocate a new page for index file header */
+    // Open the new file and allocate a new page for index file header
     PF_FileHandle newFileHandle;
     PageNum pgnum;
     rc = pfm_->OpenFile(indexfileName, newFileHandle);
@@ -67,13 +68,13 @@ RC IX_Manager::CreateIndex(const char *fileName, int indexNo,
     rc = newFileHandle.UnpinPage(rootPageNum);
     if (rc) return rc;
 
-    /* Copy file header onto header page */
+    // Copy file header onto header page
     fileHdr.rootPage = rootPageNum;
     char *headerPageData;
     headerPageHandle.GetData(headerPageData);
     memcpy(headerPageData, &fileHdr, sizeof(IX_FileHdr));
 
-    /* Mark header page as dirty and unpin it */
+    // Mark header page as dirty and unpin it
     rc = newFileHandle.MarkDirty(HEADER_PAGENUM);
     if (rc) return rc;
     rc = newFileHandle.UnpinPage(HEADER_PAGENUM);
@@ -95,28 +96,29 @@ RC IX_Manager::OpenIndex(const char *fileName, int indexNo,
 {
     if (fileName == NULL) return IX_FILENAMENULL;
 
+    // Open index file by concatenating record fileName and indexNo
     char indexfileName [strlen(fileName) + 15];
-    sprintf(indexfileName, "%s.%d", fileName, indexNo);
-    
+    sprintf(indexfileName, "%s.%d", fileName, indexNo);    
     RC rc = pfm_->OpenFile(indexfileName, indexHandle.PFfileHandle_);
     if (rc) return rc;
 
-    /* Fetch header page */
+    // Fetch index file header page
     PF_PageHandle headerPageHandle;
     rc = indexHandle.PFfileHandle_.GetFirstPage(headerPageHandle);
     if (rc) return rc;
 
-    /* Copy file header to FileHandle object */
+    // Copy index file header to IndexHandle object
     char *headerPageData;
     headerPageHandle.GetData(headerPageData);
     indexHandle.hdr_ = (IX_FileHdr *) malloc(sizeof(IX_FileHdr));
     memcpy((char *)indexHandle.hdr_, (char *)headerPageData, sizeof(IX_FileHdr));
 
     indexHandle.PFfileHandle_.UnpinPage(HEADER_PAGENUM);
+
+    // Initialize indexHandle fields
     indexHandle.valid_ = 1;
     indexHandle.hdrModified_ = 0;
     indexHandle.keylen_ = indexHandle.hdr_->attrLength + sizeof(RID);
-
     return 0;
 }
 
@@ -126,26 +128,27 @@ RC IX_Manager::CloseIndex(IX_IndexHandle &indexHandle)
     if (!indexHandle.valid_) return IX_FILEINVALID;
     indexHandle.valid_ = 0;
 
-    /* Write index file header if modified */
+    // Write index file header if modified
     if (indexHandle.hdrModified_) {
         PF_PageHandle headerPageHandle;
         rc = indexHandle.PFfileHandle_.GetFirstPage(headerPageHandle);
         if (rc) return rc;
 
-        /* Copy file header onto header page */
+        // Copy index file header onto header page
         char *headerPageData;
         headerPageHandle.GetData(headerPageData);
         memcpy((char *)headerPageData, (char *)indexHandle.hdr_, sizeof(IX_FileHdr));
 
-        /* Mark header page as dirty and unpin it */
-        indexHandle.PFfileHandle_.MarkDirty(HEADER_PAGENUM);
-        indexHandle.PFfileHandle_.UnpinPage(HEADER_PAGENUM);
+        // Mark header page as dirty and unpin it
+        rc = indexHandle.PFfileHandle_.MarkDirty(HEADER_PAGENUM);
+        if (rc) return rc;
+
+        rc = indexHandle.PFfileHandle_.UnpinPage(HEADER_PAGENUM);
+        if (rc) return rc;
     }
+
     free(indexHandle.hdr_);
     indexHandle.hdr_ = NULL;
-    rc = pfm_->CloseFile(indexHandle.PFfileHandle_);
-    if (rc) return rc;
     
-
-    return 0;
+    return pfm_->CloseFile(indexHandle.PFfileHandle_);
 }

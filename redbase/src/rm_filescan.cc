@@ -1,6 +1,7 @@
 #include "rm_internal.h"
 #include "comp.h"
 #include <stdint.h>
+#include <cstdio>
 #include <assert.h>
 
 int SlotFull(int slotNum, char *pageData);
@@ -53,12 +54,13 @@ RC RM_FileScan::GetNextRec(RM_Record &rec)
 {
   if (!valid_) return RM_FILESCANINVALID;
   if (scanComplete_) return RM_EOF;
+  //printf("WTF1\n");
 
   int recSz = (fileHandle_.hdr_).recordSize;
 
   while (1) {
     // Pin the next page if all records in current page are scanned
-    if (currentSlot_ == (fileHandle_.hdr_).recordsPerPage) {
+    if (currentSlot_ >= (fileHandle_.hdr_).recordsPerPage) {
       RC rc = FetchNextPage();
       if (rc) return rc;
       currentSlot_ = 0;
@@ -73,10 +75,16 @@ RC RM_FileScan::GetNextRec(RM_Record &rec)
       if (value_ == NULL || ConditionMet(slotData)) {
         rec.rid_ = RID(currentPage_, currentSlot_++);
 
-        if (rec.valid_) delete[] rec.contents_; // delete contents if record object already contains another record
+        //printf("valid?: %d\n", rec.valid_);
+
+        if (rec.valid_) {
+          //printf("%s\n", rec.contents_);
+          delete[] rec.contents_; // delete contents if record object already contains another record
+        }
         rec.contents_ = new char[recSz];
         rec.valid_ = 1;
         memcpy(rec.contents_, slotData, recSz);
+
         return 0;
       }
     }
@@ -87,14 +95,18 @@ RC RM_FileScan::GetNextRec(RM_Record &rec)
 
 /* Fetch the next page containing some records */
 RC RM_FileScan::FetchNextPage() {
+  int openScan = ((currentPage_ == HEADER_PAGENUM) ? 1 : 0);
+
   while (1) {
+
     /* Unpin the previous page */
     if (currentPage_ != HEADER_PAGENUM) fileHandle_.PFfileHandle_.UnpinPage(currentPage_);
     /* Get next page */
     RC rc = fileHandle_.PFfileHandle_.GetNextPage(currentPage_, pageHandle_);
     if (rc == PF_EOF) {
       scanComplete_ = 1;
-      return RM_EOF;
+      if (!openScan) return RM_EOF;
+      else return 0;
     }
     else if (rc) return rc;
 
@@ -160,7 +172,10 @@ RC RM_FileScan::CloseScan()
 {
   if (!valid_) return RM_FILESCANINVALID;
   valid_ = 0;
-  if (!scanComplete_) fileHandle_.PFfileHandle_.UnpinPage(currentPage_);
+  if (!scanComplete_) {
+    fileHandle_.PFfileHandle_.UnpinPage(currentPage_);
+    scanComplete_ = 1;
+  }
   return 0;
 }
 

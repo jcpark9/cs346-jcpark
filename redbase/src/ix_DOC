@@ -1,0 +1,87 @@
+Jichan Park
+jcpark
+CS346 Project 2
+
+[ DESIGN CHOICES ]
+(1) Keys in B+ Tree
+Key in my B+ Tree is defined as a concatenation of pData and RID.
+All entries in B+ Tree are therefore unique.
+
+Leaf nodes do not contain pointers to another page containing RIDs.
+RID itself (since it is part of a key) is contained in the leaf node. 
+
+Although including extra RID in each key (both in leaves/internal nodes) can decrease fanout,
+it is nevertheless useful because:
+  - Finding the exact entry for deletion can be more efficient if there are a lot of data duplicates
+  - No overflow page is needed and there can be a flexible nummber of data duplicates (no wasting space for data with few duplicates)
+  - During index scan, RIDs can be retrieved in such way that they are in an increasing order. 
+    (When streaming, fetching records is faster when RIDs with same PageNum are returned contiguously)
+
+(2) Structure of nodes
+Root node and internal node is structured as:
+[ Header ] [ptr (< key1)] [key1] [ptr (>= key1)] [key2] [ptr (>= key2)] ... [keyN] [ptr (>=keyN)]
+
+Leaf node is structured as:
+[ Header (next leaf ptr) (prev leaf ptr)] [key1] [key2] [key3] ...
+
+Node header contains information such as node type and number of keys/children pointers in the node.
+
+(3) Insertion
+When inserting, it is made sure that keys in any node are sorted in an increasing order. 
+Since keys in leaves are also ordered, scanning over entries across leaves will return entries in increasing order. 
+
+Insertion is done in a recursive fashion:
+Starting from root, the appropriate leaf is reached by walking down the tree.
+After hitting the leaf and as recursive calls return, keys are copied up to the parent in case of node split. 
+
+The usual B+ tree implementation holds for a node split:
+	When a leaf node is split, adjust sibling pointers and copy up the first key of the second leaf
+	When an internal node is split, copy up the middle key between two nodes
+	When a root node is split, allocate a new root with two split nodes as children
+
+(4) Traversing through leaf nodes
+Pointer to leaftmostLeaf is maintained in index file header so that traversing through leaves from the beginning is efficient
+Leaf nodes maintain prev and next pointers, which are are updated in the case of leaf split/leaf removal. 
+
+(4) Deletion
+"Lazy deletion" is implemented as suggested in the assignment description. 
+No redistribution/merging occurs when the node is less than half full.
+Leaf node is deleted only when there is 0 key in it.
+Internal node is deleted only when there is 0 valid child pointer.
+
+In a leaf page: There is at least 1 key
+In a root page: There can be 0 keys and 0 child pointer. First leaf page/child pointer is initialized once the first entry is inserted
+In an internal page: There is at least 0 key and at least 1 valid child pointer
+
+Deletion is also done in a recursive fashion:
+Starting from root, the appropriate leaf containing the key is reached by walking down the tree.
+After hitting the leaf and as recursive calls return, keys are deleted from parent in case of node deletion. 
+
+(5) Index scan
+For NO_OP, LE_OP and LT_OP, entries are scanned rightward from the leftmostLeaf.
+Scan stops when the entry encountered no longer meets LE_OP and LT_OP condition (recall entries are in increasing order). 
+
+FOR EQ_OP, GE_OP and GT_OP, initializePtr() finds the first entry that meets the scan condition (by walking down the tree from root) and sets the scan pointer to it.
+Then with each GetNextEntry(), entries are scanned rightward. 
+Scan stops when the entry encountered no longer meets EQ_OP condition. 
+For GE_OP and GT_OP, entires are scanned/returned until the end of leaf list is reached. 
+
+When a pointer reaches the end of a leaf, it fetches the next leaf and continues scanning by following next pointer. 
+
+Code handles deletion scan by keeping track of the last key scanned.
+When GetNextEntry() is called, code checks to see if the last key scanned is still there or if it's been replaced due to key deletion and shifting.
+If the last key scanned has been deleted, scan pointer goes back to that key index and rescans the new shifted key. 
+
+Code handles the edge case of when there is only one key remaining in a leaf node.
+During deletion scan, this leaf node might be disposed when that last key is deleted. 
+Therefore, after scanning the one remaining key, code fetches next page prematurely (instead of waiting for next GetNextEntry() call since deletion might occur before the call)
+
+
+[ TESTING / ACKNOWLEDGEMENT ]
+I fetched several shared tests from CS346 bin and ran it with my IX component to catch any bugs.
+Debugging was done through use of GDB and dumping out content of nodes.
+Automatic grader was also helpful for getting feedback. 
+I ran all tests under valgrind to make sure there is no invalid memory access/write.
+
+Information in http://poincare.matf.bg.ac.rs/~gordana//projektovanjeBP/DMSpoglavlje9.pdf
+was a good inspiration for the duplicate-handling strategy and recursive structure for insertion and deletion

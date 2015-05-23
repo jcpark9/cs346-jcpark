@@ -35,14 +35,13 @@ PF_SOURCES     = pf_buffermgr.cc pf_error.cc pf_filehandle.cc \
                  pf_pagehandle.cc pf_hashtable.cc pf_manager.cc \
                  pf_statistics.cc statistics.cc
 RM_SOURCES     = rm_error.cc rm_filehandle.cc rm_filescan.cc \
-				 rm_manager.cc rm_record.cc rm_rid.cc
-IX_SOURCES     = ix_error.cc ix_manager.cc ix_indexhandle.cc ix_indexscan.cc comp.cc
-SM_SOURCES     = #sm_stub.cc printer.cc
-QL_SOURCES     = #ql_manager_stub.cc
-UTILS_SOURCES  = #dbcreate.cc dbdestroy.cc redbase.cc
-PARSER_SOURCES = #scan.c parse.c nodes.c interp.c
-TESTER_SOURCES = ix_test.cc ix_testpark.cc ix_testkpg_2.cc
-				 #ix_test.cc parser_test.cc
+				 rm_manager.cc rm_record.cc rm_rid.cc comp.cc
+IX_SOURCES     = ix_error.cc ix_manager.cc ix_indexhandle.cc ix_indexscan.cc
+SM_SOURCES     = sm_error.cc sm_manager.cc printer.cc
+QL_SOURCES     = ql_error.cc ql_manager.cc ql_node.cc
+UTILS_SOURCES  = dbcreate.cc dbdestroy.cc redbase.cc
+PARSER_SOURCES = scan.c parse.c nodes.c interp.c
+TESTER_SOURCES = 
 PF_OBJECTS     = $(addprefix $(BUILD_DIR), $(PF_SOURCES:.cc=.o))
 RM_OBJECTS     = $(addprefix $(BUILD_DIR), $(RM_SOURCES:.cc=.o))
 IX_OBJECTS     = $(addprefix $(BUILD_DIR), $(IX_SOURCES:.cc=.o))

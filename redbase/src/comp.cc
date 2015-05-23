@@ -1,7 +1,11 @@
 #include "comp.h"
 
 int StringCompare(char *key, void *val, int n) {
-  return strncmp(key, (char *)val, n);
+  char temp1[n];
+  char temp2[n];
+  strncpy(temp1, key, n);
+  strncpy(temp2, (char *)val, n);
+  return strncmp(temp1, temp2, n);
 }
 
 int IntCompare(char *key, void *val, int n) {
@@ -26,9 +30,10 @@ int FloatCompare(char *key, void *val, int n) {
   return 1;
 }
 
-/* Returns 1 if the unique key defined by (pData1, rid1) is greater than key
- *        -1 if it is lesser than key
+/* Returns 1 if key1 is greater than key2
+ *        -1 if it is lesser than key2
  *         0 if two keys are identical (which they never should be)
+ * When DataOnly is set to 1, only compares pData (and not RID)
  */
 int CompareKey(char *key1, char *key2, int DataOnly, AttrType attrType, int attrLength) {
   int comp = 0;

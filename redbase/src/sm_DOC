@@ -1,0 +1,64 @@
+Jichan Park
+jcpark
+CS346 Project 3
+
+[ DESIGN CHOICES ]
+In "dbcreate.cc", record files and index files for two catalog relations ("relcat" and "attrcat") are created. 
+Meatdata about these two relations and their attributes are inserted into catalogs themselves. 
+In "dbdestroy.cc", subdirectory containing all of database files are deleted. 
+In "redbase.cc", the code descends into subdirectory containing the database files and calls parser. 
+
+< Indexing > 
+I decided to create index on "relName" of "relcat" and "attrcat" catalog relations. 
+When the database consists of a large number of relations, indexing on relation name makes it faster to do any database operation (compared to scanning through all entries in relcat and attrcat)
+
+< Metadata > 
+To make it easy to access and read metadata (for SM and QL components), I defined the following structs and functions:
+	struct RelcatTuple
+	struct AttrcatTuple
+	RC FindRelMetadata(const char *relName, RM_Record &rec)
+    RC FindAttrMetadata(const char *relName, const char* attrName, RM_Record &rec)
+	RelcatTuple *GetRelcatTuple(RM_Record &rec)
+	AttrcatTuple *GetAttrcatTuple(RM_Record &rec)
+
+Metadata on relations and attributes is packed into RelcatTuple struct and AttrcatTuple struct respectively, when being inserted into catalogs. Note that the two structs are aligned well (no padding between each fields). 
+
+I followed the assignment description's suggestions for metadata fields. 
+RelcatTuple contains fields on relName, tupleLength, attrCount, and indexCount.
+(indexCount is used as indexNo of a new index. Note that indexCount is strictly incrementing so that indexNo is unique for the new index; indexCount does not decrease upon dropping an index.)
+AttrcatTuple contains fields on relName, attrName, offset, attrType, attrLength and indexNo. 
+
+When accessing metadata on a certain relation, you can call    
+    RM_Record relRecord;
+    FindRelMetadata(relName, relRecord);
+    RelcatTuple *relMetadata = GetRelcatTuple(relRecord);
+
+FindRelMetadata finds relcat record for the relation. GetRelcatTuple extracts data from this record and casts the pointer to RelcatTuple*. You can then access each field like relMetadata->attrCount.
+
+Similarly, for metadata on a certain attribute, you can call
+    RM_Record relRecord;
+    FindAttrMetadata(relName, attrName, relRecord);
+    AttrcatTuple *attrMetadata = GetAttrcatTuple(relRecord);
+
+< Implementation >
+Most SM_Manager functions are implemented in a straightforward manner, 
+leveraging on IX and RM components. 
+
+Some caveats include:
+- I added a public function AddToCatalogs() to SM_Manager interface
+so that "dbcreate.cc" can use this function to add metadata about catalogs
+to catalogs. 
+- Help() is implemented as Print("relcat")
+- Have not implemented any parameters for 'set' utility, but may do so
+  for QL and EX if the need arises. 
+
+
+[ TESTING ]
+I fetched several testdata from CS346 bin and ran them with my SM component.
+I wrote a series of commands that repeatedly creates table/indexes, drops table/indexes, loads, prints, etc.
+then verified the output myself. 
+The autograder was helpful in checking for error conditions. 
+
+
+[ ACKNOWLEDGEMENT ]
+I used code snippets from the assignment description for "dbdestroy.cc", "redbase.cc" and printing functions. 

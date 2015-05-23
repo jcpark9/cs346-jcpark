@@ -22,6 +22,7 @@
 #include "rm_rid.h"
 #include "pf.h"
 
+class qJoin;
 class RM_FileHandle;
 class RM_Record;
 class RM_FileScan;
@@ -134,6 +135,7 @@ private:
 // RM_Record: RM Record interface
 //
 class RM_Record {
+    friend class qJoin;
     friend class RM_FileHandle;
     friend class RM_FileScan;
 
