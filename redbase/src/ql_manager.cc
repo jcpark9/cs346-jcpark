@@ -42,8 +42,7 @@ void PrintQueryPlan(qNode *root) {
 }
 
 RC ExecuteQueryPlan(qNode *root) {
-    //if (bQueryPlans)
-    PrintQueryPlan(root);
+    if (bQueryPlans) PrintQueryPlan(root);
 
     while (1) {
         RM_Record rec;
@@ -78,9 +77,7 @@ int FindIndexedAttrCond(int nConditions, const Condition conditions[], DataAttrI
         Condition c = conditions[i];
         if (!c.bRhsIsAttr) {
             DataAttrInfo info;
-            if (checkAttrExists(c.lhsAttr, attributes, attrCount, info) == 0) {
-                if (info.indexNo != -1 && info.indexNo != updAttrIndexNo) return i;
-            }
+            if (checkAttrExists(c.lhsAttr, attributes, attrCount, info) == 0 && info.indexNo != -1 && info.indexNo != updAttrIndexNo) return i;
         }
     }
     return -1;
@@ -109,14 +106,9 @@ QL_Manager::~QL_Manager()
 
 
 /* Checks if relations in WHERE clause exist and there are no duplicate */
-RC QL_Manager::ValidateRelForSelect(int nRelations, const char * const relations[], 
-    DataAttrInfo *attrInfos[], int nAttr[])
+RC ValidateRelForSelect(int nRelations, const char * const relations[])
 {
-    RC rc;
     for (int i = 0; i < nRelations; i++) {
-        rc = smm_->FillDataAttributes(relations[i], attrInfos[i], nAttr[i]);
-        if (rc) return rc;
-
         const char *r1 = relations[i];
         for (int j = i+1; j < nRelations; j++) {
             const char *r2 = relations[j];
@@ -171,11 +163,6 @@ RC QL_Manager::ValidateAttrForSelect(const RelAttr &attr, int nRelations,
     return 0;
 }
 
-void CleanUpAttributes(DataAttrInfo *attributes[], int nRelations)
-{
-    for (int i = 0; i < nRelations; i++)
-        delete[] attributes[i];
-}
 
 //
 // Handle the select clause
@@ -201,53 +188,38 @@ RC QL_Manager::Select(int nSelAttrs, const RelAttr selAttrs[],
         cout << "   conditions[" << i << "] " << conditions[i] << "\n";
 
     /* Validate relations */
-    int attrCount[nRelations];
-    DataAttrInfo *attributes[nRelations];
-    if ((rc = ValidateRelForSelect(nRelations, relations, attributes, attrCount))) return rc;
+    if ((rc = ValidateRelForSelect(nRelations, relations))) return rc;
 
     /* Validate attributes in selAttrs */
     AttrType attrType;
-    for (int i = 0; i < nSelAttrs; i++) {
-        if ((rc = ValidateAttrForSelect(selAttrs[i], nRelations, relations, attrType))) {
-            CleanUpAttributes(attributes, nRelations);
-            return rc;
-        }
-    }
+    for (int i = 0; i < nSelAttrs; i++)
+        if ((rc = ValidateAttrForSelect(selAttrs[i], nRelations, relations, attrType))) return rc;
 
     /* Validate attributes in conditions */
     for (int i = 0; i < nConditions; i++) {
         Condition c = conditions[i];
-        if ((rc = ValidateAttrForSelect(c.lhsAttr, nRelations, relations, attrType))) {
-            CleanUpAttributes(attributes, nRelations);
-            return rc;
-        }
+        if ((rc = ValidateAttrForSelect(c.lhsAttr, nRelations, relations, attrType))) return rc;
 
         if (c.bRhsIsAttr) {
             AttrType rhsAttrType;
-            if ((rc = ValidateAttrForSelect(c.rhsAttr, nRelations, relations, rhsAttrType))) {
-                CleanUpAttributes(attributes, nRelations);
-                return rc;
-            }
-            if (rhsAttrType != attrType) {
-                CleanUpAttributes(attributes, nRelations);
-                return QL_OPERANDSINCOMPATIBLE;
-            }
+            if ((rc = ValidateAttrForSelect(c.rhsAttr, nRelations, relations, rhsAttrType))) return rc;
+            if (rhsAttrType != attrType) return QL_OPERANDSINCOMPATIBLE;
         } else {
-            if (c.rhsValue.type != attrType) {
-                CleanUpAttributes(attributes, nRelations);
-                return QL_OPERANDSINCOMPATIBLE;
-            }
+            if (c.rhsValue.type != attrType) return QL_OPERANDSINCOMPATIBLE;
         }
     }
 
-
+    int attrCount[nRelations];
+    DataAttrInfo *attributes[nRelations];
     vector<int> remainingCond; // Indices of conditions that have not yet been reflected in query plan
     for (int i = 0; i < nConditions; i++) remainingCond.push_back(i);
     
     vector<qNode *> branches;
     for (int i = 0 ; i < nRelations; i++) {
-        qNode *branch;
         const char *relName = relations[i];
+        if ((rc = smm_->FillDataAttributes(relName, attributes[i], attrCount[i]))) return rc;        
+
+        qNode *branch;
 
         int indexedCond = FindIndexedAttrCond(nConditions, conditions, attributes[i], attrCount[i], -1);
         if (indexedCond != -1) {
@@ -257,7 +229,8 @@ RC QL_Manager::Select(int nSelAttrs, const RelAttr selAttrs[],
             int scanConditionFound = 0;
             for (unsigned int j = 0; j < remainingCond.size(); j++) {
                 Condition c = conditions[remainingCond[j]];
-                if (!c.bRhsIsAttr) {
+                DataAttrInfo info;
+                if (!c.bRhsIsAttr && checkAttrExists(c.lhsAttr, attributes[i], attrCount[i], info) == 0) {
                     branch = static_cast<qNode*> (new qTableScan(attrCount[i], attributes[i], conditions[remainingCond[j]], NULL, rmm_));
                     remainingCond.erase(remainingCond.begin() + j);
                     scanConditionFound = 1;
@@ -294,7 +267,6 @@ RC QL_Manager::Select(int nSelAttrs, const RelAttr selAttrs[],
             branches.push_back(branch);
         }
     }
-
 
     while (branches.size() > 1) {
         qNode *joinedBranch;
@@ -336,7 +308,8 @@ RC QL_Manager::Select(int nSelAttrs, const RelAttr selAttrs[],
 
     rc = ExecuteQueryPlan(root);
     DeleteQueryPlan(root);
-    CleanUpAttributes(attributes, nRelations);
+    for (int i = 0; i < nRelations; i++)
+        delete[] attributes[i];
     return rc;
 }
 
@@ -370,13 +343,14 @@ RC QL_Manager::Insert(const char *relName,
         if (values[i].type != attributes[i].attrType) { 
             delete[] attributes; return QL_OPERANDSINCOMPATIBLE;
         }
-        memcpy(newTuple + attributes[i].offset, values[i].data, 4);
+        memcpy(newTuple + attributes[i].offset, values[i].data, attributes[i].attrLength);
     }
 
     /* Insert a new tuple into record file */
     RM_FileHandle fh; RID rid;
     if ((rc = rmm_->OpenFile(relName, fh))) { delete[] attributes; return rc; }
     if ((rc = fh.InsertRec(newTuple, rid))) { delete[] attributes; return rc; }
+    if ((rc = rmm_->CloseFile(fh))) { delete[] attributes; return rc; }
 
     /* Insert index entry for an indexed attribute */
     for (int i=0; i < nValues; i++) {
@@ -390,8 +364,8 @@ RC QL_Manager::Insert(const char *relName,
 
     /* Update relation metadata (numTuples) */
     relMetadata->numTuples++;
-    if ((rc = smm_->relcatFile_.UpdateRec(relRecord))) return rc;
-    if ((rc = smm_->relcatFile_.ForcePages())) return rc;
+    if ((rc = smm_->relcatFile_.UpdateRec(relRecord))) { delete[] attributes; return rc; }
+    if ((rc = smm_->relcatFile_.ForcePages())) { delete[] attributes; return rc; }
 
     /* Print the inserted tuple */
     Printer p(attributes, attrCount);
@@ -452,6 +426,11 @@ RC QL_Manager::Delete(const char *relName,
     for (i = 0; i < nConditions; i++) 
         cout << "   conditions[" << i << "]:" << conditions[i] << "\n"; 
 
+    
+    RM_Record relRecord;
+    if ((rc = smm_->FindRelMetadata(relName, relRecord))) return rc;
+    RelcatTuple *relMetadata = smm_->GetRelcatTuple(relRecord);
+
     DataAttrInfo *attributes; int attrCount;
     if ((rc = smm_->FillDataAttributes(relName, attributes, attrCount))) return rc;
 
@@ -497,7 +476,13 @@ RC QL_Manager::Delete(const char *relName,
 
     root = static_cast<qNode*> (new qDelete(root, relName, rmm_, ixm_));
 
-    rc = ExecuteQueryPlan(root);
+    if ((rc = ExecuteQueryPlan(root)) == 0) {
+        relMetadata->numTuples -= (static_cast<qDelete*> (root))->tuplesDeleted;
+        /* Update relation metadata (numTuples) */
+        if ((rc = smm_->relcatFile_.UpdateRec(relRecord))) { delete[] attributes; return rc; }
+        if ((rc = smm_->relcatFile_.ForcePages())) { delete[] attributes; return rc; }        
+    }
+
     DeleteQueryPlan(root);
     delete[] attributes;
     return 0;

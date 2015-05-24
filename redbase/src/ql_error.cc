@@ -11,7 +11,7 @@ using namespace std;
 //
 static char *QL_WarnMsg[] = {
   (char*)"End of Query Result",
-  (char*)"Left hand side attribute and right hadn side attribute doesn't have the same type",
+  (char*)"Left hand side attribute and right hand side attribute doesn't have the same type",
   (char*)"Duplicate relations in WHERE clause",
   (char*)"Attribute is not an attribute of one of the relations in WHERE clause",
   (char*)"Ambiguous unqualified attribute",

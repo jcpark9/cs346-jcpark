@@ -5,9 +5,9 @@ void PrintCondition(string whitespace, const Condition &c)
     cout << whitespace << "|  lhsAttr: " << c.lhsAttr << endl;
     cout << whitespace << "|  op: " << c.op << endl;
     if (c.bRhsIsAttr) {
-       cout << whitespace << "|  bRhsIsAttr = TRUE, lhsAttr: " << c.rhsAttr << endl;
+       cout << whitespace << "|  bRhsIsAttr = TRUE     rhsAttr: " << c.rhsAttr << endl;
     } else {
-        cout << whitespace << "|  bRhsIsAttr = FALSE, rhsValue: " << c.rhsValue << endl;
+        cout << whitespace << "|  bRhsIsAttr = FALSE     rhsValue: " << c.rhsValue << endl;
     }
 }
 
@@ -97,6 +97,7 @@ void qTableScan::PrintOp(string whitespace) {
     if (fullScan) {
         cout << whitespace << "(Full scan without any condition)" << endl;
     } else {
+        cout << whitespace << "condition:" << endl;
         PrintCondition(whitespace, condition);
     }
 }
@@ -148,14 +149,18 @@ RC qIndexScan::GetNext(RM_Record &rec) {
 }
 
 void qIndexScan::PrintOp(string whitespace) {
-    cout << whitespace << "<<INDEX SCAN>> on " << condAttrInfo.relName << endl;;
+    cout << whitespace << "<<INDEX SCAN>> on " << condAttrInfo.relName << endl;
+    cout << whitespace << "condition:" << endl;
     PrintCondition(whitespace, condition);
 }
 
+int qJoin::nextJoinID = 0;
 
 qJoin::qJoin(qNode *child, qNode *rchild, int nConditions, const Condition conditions[], RM_Manager *rmm) {
     type = NESTED_LOOP_JOIN;
     this->child = child; this->rchild = rchild;
+    sprintf(leftFilename, "child_temp%d", nextJoinID);
+    sprintf(rightFilename, "rchild_temp%d", nextJoinID++);
     this->nConditions = nConditions;
     this->conditions = new Condition[nConditions];
     memcpy(this->conditions, conditions, sizeof(Condition) * nConditions);
@@ -192,9 +197,6 @@ qJoin::qJoin(qNode *child, qNode *rchild, int nConditions, const Condition condi
         }
     }
 
-    //p1 = new Printer(child->attributes, child->attrCount);
-    //p2 = new Printer(rchild->attributes, rchild->attrCount);
-
     initialized = 0;
 }
 
@@ -209,32 +211,27 @@ qJoin::~qJoin() {
 
 RC qJoin::Begin() {
     RC rc;
-    if ((rc = rmm->CreateFile("child temp", childTupleSize))) return rc;
-    if ((rc = rmm->OpenFile("child temp", childResults))) return rc;
-
-    if ((rc = rmm->CreateFile("rchild temp", rchildTupleSize))) return rc;
-    if ((rc = rmm->OpenFile("rchild temp", rchildResults))) return rc;
+    if ((rc = rmm->CreateFile(leftFilename, childTupleSize))) return rc;
+    if ((rc = rmm->OpenFile(leftFilename, childResults))) return rc;
+    if ((rc = rmm->CreateFile(rightFilename, rchildTupleSize))) return rc;
+    if ((rc = rmm->OpenFile(rightFilename, rchildResults))) return rc;
 
     RM_Record rec; RID rid; char *pData;
-    //p1->PrintHeader(cout);
     while (1) {
         rc = child->GetNext(rec);
         if (rc == QL_ENDOFRESULT) break;
         if (rc) return rc;
 
         if ((rc = rec.GetData(pData))) return rc;
-        //p1->Print(cout, pData);
         if ((rc = childResults.InsertRec(pData, rid))) return rc;
     }
 
-    //p2->PrintHeader(cout);
     while (1) {
         rc = rchild->GetNext(rec);
         if (rc == QL_ENDOFRESULT) break;
         if (rc) return rc;
 
         if ((rc = rec.GetData(pData))) return rc;
-        //p2->Print(cout, pData);
         if ((rc = rchildResults.InsertRec(pData, rid))) return rc;
     }
 
@@ -291,9 +288,9 @@ RC qJoin::GetNext(RM_Record &rec) {
             if (rc == RM_EOF) {
                 if ((rc = childFs.CloseScan())) return rc;
                 if ((rc = rmm->CloseFile(childResults))) return rc;
-                if ((rc = rmm->CloseFile(rchildResults))) return rc; 
-                if ((rc = rmm->DestroyFile("child temp"))) return rc;
-                if ((rc = rmm->DestroyFile("rchild temp"))) return rc;
+                if ((rc = rmm->CloseFile(rchildResults))) return rc;
+                if ((rc = rmm->DestroyFile(leftFilename))) return rc;
+                if ((rc = rmm->DestroyFile(rightFilename))) return rc;
                 return QL_ENDOFRESULT;
             } if (rc) return rc;
 
@@ -576,6 +573,7 @@ RC qDelete::Begin() {
 
     p->PrintHeader(cout);        
     initialized = 1;
+    tuplesDeleted = 0;
     return 0;
 }
 
@@ -607,6 +605,7 @@ RC qDelete::GetNext(RM_Record &rec) {
 
     /* Delete record */
     if ((rc = fh.DeleteRec(rid))) return rc;
+    tuplesDeleted++;
 
     /* Delete entry on indexed attributes */
     for (int i = 0; i < attrCount; i++) {

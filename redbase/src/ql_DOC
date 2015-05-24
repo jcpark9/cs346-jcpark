@@ -1,0 +1,59 @@
+Jichan Park
+jcpark
+CS346 Project 4
+
+[ HIGH-LEVEL DESCRIPTION ]
+For each query, the code goes through the following three steps:
+(1) Validates given input
+(2) Builds a query plan tree based on some heuristic
+(3) Executes the plan using iterator approach
+
+
+[ VALIDATING INPUT ]
+Functions such as ValidateRelForSelect(), ValidateAttrForSelect() and ValidateAttrForDeleteAndUpdate() 
+check all relations, attributes and conditions provided by the user using FillDataAttributes() and FindAttrMetadata() defined in SM_component.
+
+Validation ensures that:
+(1) given relations and attributes actually exist
+(2) relations appear in WHERE clause only once
+(3) given attribute is indeed an attribute of one of the relations in WHERE clause
+(4) attribute with relation unspecified is unambiguous
+(5) lhs and rhs of condition have the same attrType
+
+
+[ QUERY TREE STRUCTURE ]
+A query plan is built as a tree, where each node (abstract class qNode as defined in ql_node.h) represents a physical operation.
+All nodes have one child, except for qJoin, which is the only binary operator. 
+
+Each node belongs to one of the following subclasses:
+
+(1) qTableScan : Sequential scan of a table (full scan or based on one condition)
+(2) qIndexScan : Index scan of a table (based on one condition)
+These two types appear only as leaves, since they directly access the tables. 
+
+(3) qFilter: Filters results returned by its child (based on a set of conditions) 
+(4) qJoin: Joins results returned by two children (based on a set of conditions).
+These may appear only as intermediate nodes. 
+
+(5) qProject: Projects and prints a set of attributes of results returned by its child
+(6) qDelete: Deletes tuples returned by its child (along with associated index entries)
+(7) qUpdate: Updates tuples returned by its child (along with associated index entries)
+These may appear only as root nodes. They represent the last operation executed before returning final results. 
+Note that for simplicity, I decided to not optimize projection (i.e. push it down)
+
+
+[ BUILDING A QUERY PLAN ]
+
+
+(2) Builds a query plan tree based on some heuristic
+
+
+
+
+
+[ EXECUTING A QUERY PLAN ]
+The query plan is executed using the iterator approach. All qNode implements GetNext() which processes and returns a next tuple.
+During execution, each node in the tree recursively calls GetNext() on its children. 
+
+
+[ ]

@@ -95,14 +95,14 @@ private:
     DataAttrInfo *rhsCondAttr;
 
     RM_Manager *rmm;
+    static int nextJoinID;
+    char leftFilename[20];
+    char rightFilename[20];
     RM_FileHandle childResults;
     RM_FileHandle rchildResults;
     RM_FileScan childFs;
     RM_FileScan rchildFs;
     RM_Record rec1;
-
-    //Printer *p1;
-    //Printer *p2;
 };
 
 /* Projects attrs of results in child1 */
@@ -166,6 +166,7 @@ private:
 
 /* Updates tuples returned by child */
 class qDelete : public qNode {
+friend class QL_Manager;
 public:
     qDelete(qNode *child, const char *relName, RM_Manager *rmm, IX_Manager *ixm);
     ~qDelete();
@@ -181,6 +182,7 @@ private:
     IX_Manager *ixm;
     IX_IndexHandle *ih;
     RM_FileHandle fh;
+    int tuplesDeleted;
 };
 
 #endif

@@ -52,8 +52,6 @@ private:
     RM_Manager *rmm_;
     IX_Manager *ixm_;
     SM_Manager *smm_;
-    RC ValidateRelForSelect(int nRelations, const char * const relations[], 
-        DataAttrInfo *attrInfos[], int nAttr[]);
     RC ValidateAttrForSelect(const RelAttr &attr, int nRelations, 
         const char * const relations[], AttrType &attrType);
 
