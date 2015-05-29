@@ -22,38 +22,107 @@ Validation ensures that:
 
 
 [ QUERY TREE STRUCTURE ]
-A query plan is built as a tree, where each node (abstract class qNode as defined in ql_node.h) represents a physical operation.
+A query plan is constructed as a tree, where each node (abstract class qNode as defined in ql_node.h) represents a physical operation.
 All nodes have one child, except for qJoin, which is the only binary operator. 
 
 Each node belongs to one of the following subclasses:
 
 (1) qTableScan : Sequential scan of a table (full scan or based on one condition)
 (2) qIndexScan : Index scan of a table (based on one condition)
-These two types appear only as leaves, since they directly access the tables. 
+These two types appear only as leaves, since they directly access the tables
 
-(3) qFilter: Filters results returned by its child (based on a set of conditions) 
-(4) qJoin: Joins results returned by two children (based on a set of conditions).
+(3) qFilter: Filters results returned by its child (based on a set of conditions)
+(4) qJoin: Joins results returned by two children using nested loop (based on a set of conditions)
 These may appear only as intermediate nodes. 
 
-(5) qProject: Projects and prints a set of attributes of results returned by its child
+(5) qProject: Projects and prints certain attributes of results returned by its child
 (6) qDelete: Deletes tuples returned by its child (along with associated index entries)
 (7) qUpdate: Updates tuples returned by its child (along with associated index entries)
-These may appear only as root nodes. They represent the last operation executed before returning final results. 
+These may appear only as root nodes. They represent the last operation executed before returning final results.
 Note that for simplicity, I decided to not optimize projection (i.e. push it down)
 
 
 [ BUILDING A QUERY PLAN ]
+The code does NOT build multiple query plans and chooses the best one based on some cost model.
+It builds a single query plan with few built-in optimizations.
+
+(1) Heuristic for "select"
+
+branches = []
+for each relation:
+    branch = NULL;
+
+    for each condition:
+        if lhs is an indexed attribute and rhs is value:
+            branch = qIndexScan(relation, condition)
+            remove condition from conditions
+
+    if branch is NULL :
+        for each condition:
+            if rhs is value:
+                branch = qTableScan(relation, condition)
+                remove condition from conditions
+        if branch is NULL :
+            branch = qTableScan(relation, full scan)
+
+    filterConditions = []
+    for each condition:
+        if condition involves attributes of this relation:
+            add condition to filterConditions
+    branch = qFilter(branch, filterConditions)
+    add branch to branches
+
+while branches have more than one branch:
+    pop the first two branches (branch1, branch2)
+    joinConditions = []
+    for each condition:
+        if condition involves attributes of branch1 and branch2:
+            add  condition to joinConditions
+    branch = qJoin(branch1, branch2, joinConditions)
+    add branch to branches
+
+root = qProject(the only branch in branches, projectionAttr)
 
 
-(2) Builds a query plan tree based on some heuristic
+(2) Heuristic for "delete" and "update"
 
+root = NULL; // Start building the tree from bottom up
 
+for each condition:
+    if lhs is an indexed attribute (that is not also an updated attribute) and rhs is value:
+        root = qIndexScan(relation, condition)
+        remove condition from conditions
 
+if root is NULL :
+    for each condition:
+        if rhs is value:
+            root = qTableScan(relation, condition)
+            remove condition from conditions
+    if root is NULL :
+        root = qTableScan(relation, full scan)
+
+if conditions is NOT empty :
+    root = qFilter(root, all remaining conditions)    
+
+root = qUpdate(root, update criterion) || qDelete(root)
+
+Note that some optimizations include:
+* Pushing selections down (before join)
+* Choosing index scan whenever possible
 
 
 [ EXECUTING A QUERY PLAN ]
-The query plan is executed using the iterator approach. All qNode implements GetNext() which processes and returns a next tuple.
-During execution, each node in the tree recursively calls GetNext() on its children. 
+The query plan is executed using the iterator approach. To make this approach work, 
+- All qNode subclasses implement virtual method GetNext(), which processes and returns the next tuple.
+- Most qNode subclasses implement Begin(), which initializes objects (i.e. opening files, scans, etc.) before executing.
+- Cleaning up (i.e. closing files, scans, etc.) is done when calling GetNext() on child returns EOF.
+
+During execution, each node in the tree recursively calls GetNext() on its children, then processes the returned tuple (which in turn gets passed to the node's parent). Therefore, calling GetNext() on the root of the query tree will yield final results (tuple by tuple); execution will complete when GetNext() is called repeatedly until QL_ENDOFRESULT is returned. 
+
+Since results flow continuously from bottom up, we can avoid storing intermediate results as a materialized relation.
+One exception is join, which is a blocking operation that requires complete results from one child (to iterate over multiple times).
+Therefore, in Begin() of qJoin, we have to call GetNext() exhaustively on its right child and store its results in a temporary record file.
 
 
-[ ]
+[ ACKNOLWEDGEMENT ]
+Lecture notes in http://www.cs.duke.edu/courses/spring05/cps216/lectures/13-qp-notes.pdf was helpful in understanding physical query tree.

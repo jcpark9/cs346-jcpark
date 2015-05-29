@@ -28,11 +28,11 @@ public:
     virtual void PrintOp(string whitespace) = 0;
 
     OpType type;                // type of the operator
-    qNode *child;
+    qNode *child;               // child of this node
     qNode *rchild;              // For binary operators
-    int attrCount;
+    int attrCount;              // # of attributes for result of this operator
     DataAttrInfo *attributes;   // Information about attributes of the result of this operator
-    int initialized;
+    int initialized;            // 1 if Begin() has been called, 0 otherwise
 };
 
 /* Operand (leaf) of a query tree. 
@@ -88,21 +88,18 @@ public:
 private:
     int nConditions;
     Condition *conditions;
-    int childTupleSize;
-    int rchildTupleSize;
-    int joinedTupleSize;
+    int childTupleSize;             // Size of the tuple returned by child
+    int rchildTupleSize;            // Size of the tuple returned by rchild
+    int joinedTupleSize;            // Size of the jointed tuple
     DataAttrInfo *lhsCondAttr;
     DataAttrInfo *rhsCondAttr;
 
     RM_Manager *rmm;
-    static int nextJoinID;
-    char leftFilename[20];
-    char rightFilename[20];
-    RM_FileHandle childResults;
-    RM_FileHandle rchildResults;
-    RM_FileScan childFs;
-    RM_FileScan rchildFs;
-    RM_Record rec1;
+    static int nextJoinID;          // ID used to create a unique temporary filename for each join operator
+    char rightFilename[20];         // Filename for rchildResults
+    RM_FileHandle rchildResults;    // Temporary file for storing results from rchild
+    RM_FileScan rchildFs;           // Scan object for iterating over results of rchild
+    RM_Record rec1;                 // Tuple of child that is being compared in the outer loop
 };
 
 /* Projects attrs of results in child1 */
@@ -117,8 +114,8 @@ public:
 private:
     int nProjAttrs;
     const RelAttr *projAttrs;
-    int *oldOffsets;
-    int tupleLength;
+    int *oldOffsets;                // Offsets of attributes before projection
+    int tupleLength;                // Length of the projected tuple
     Printer *p;
 };
 
@@ -141,16 +138,14 @@ private:
 /* Updates tuples returned by child */
 class qUpdate : public qNode {
 public:
-    qUpdate(qNode *child, const RelAttr &updAttr, int bIsValue, const RelAttr &rhsAttr, const Value &rhsValue, RM_Manager *rmm, IX_Manager *ixm);
+    qUpdate(qNode *child, const DataAttrInfo &updAttrInfo, int bIsValue, const RelAttr &rhsAttr, const Value &rhsValue, RM_Manager *rmm, IX_Manager *ixm);
     ~qUpdate();
     RC Begin();
     RC GetNext(RM_Record &rec);
     void PrintOp(string whitespace);
 
 private:
-    RelAttr updAttr; 
     int bIsValue;
-    RelAttr rhsAttr; 
     Value rhsValue;
 
     RM_Manager *rmm;
@@ -158,6 +153,7 @@ private:
     IX_IndexHandle ih;
     RM_FileHandle fh;
 
+    RelAttr rhsAttr;
     DataAttrInfo updAttrInfo;
     DataAttrInfo rhsAttrInfo;
     Printer *p;
@@ -182,7 +178,7 @@ private:
     IX_Manager *ixm;
     IX_IndexHandle *ih;
     RM_FileHandle fh;
-    int tuplesDeleted;
+    int tuplesDeleted;          // # of tuples deleted so far
 };
 
 #endif

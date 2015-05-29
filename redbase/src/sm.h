@@ -71,6 +71,7 @@ public:
                    const char *value);            //   value
 
     RC AddToCatalog(char *relName, int attrCount, AttrInfo *attributes);
+    RC FillDataAttributes(const char *relName, DataAttrInfo *&attributes, int &attrCount);
 
 private:
     IX_Manager *ixm_;
@@ -82,7 +83,6 @@ private:
 
     RC FindRelMetadata(const char *relName, RM_Record &rec);
     RC FindAttrMetadata(const char *relName, const char* attrName, RM_Record &rec);
-    RC FillDataAttributes(const char *relName, DataAttrInfo *&attributes, int &attrCount);
     RelcatTuple* GetRelcatTuple(RM_Record &rec);
     AttrcatTuple* GetAttrcatTuple(RM_Record &rec);
 };

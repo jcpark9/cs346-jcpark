@@ -54,7 +54,6 @@ private:
     SM_Manager *smm_;
     RC ValidateAttrForSelect(const RelAttr &attr, int nRelations, 
         const char * const relations[], AttrType &attrType);
-
 };
 
 //

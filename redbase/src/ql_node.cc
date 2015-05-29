@@ -159,8 +159,8 @@ int qJoin::nextJoinID = 0;
 qJoin::qJoin(qNode *child, qNode *rchild, int nConditions, const Condition conditions[], RM_Manager *rmm) {
     type = NESTED_LOOP_JOIN;
     this->child = child; this->rchild = rchild;
-    sprintf(leftFilename, "child_temp%d", nextJoinID);
     sprintf(rightFilename, "rchild_temp%d", nextJoinID++);
+    cout << rightFilename << endl;
     this->nConditions = nConditions;
     this->conditions = new Condition[nConditions];
     memcpy(this->conditions, conditions, sizeof(Condition) * nConditions);
@@ -211,21 +211,10 @@ qJoin::~qJoin() {
 
 RC qJoin::Begin() {
     RC rc;
-    if ((rc = rmm->CreateFile(leftFilename, childTupleSize))) return rc;
-    if ((rc = rmm->OpenFile(leftFilename, childResults))) return rc;
     if ((rc = rmm->CreateFile(rightFilename, rchildTupleSize))) return rc;
     if ((rc = rmm->OpenFile(rightFilename, rchildResults))) return rc;
 
     RM_Record rec; RID rid; char *pData;
-    while (1) {
-        rc = child->GetNext(rec);
-        if (rc == QL_ENDOFRESULT) break;
-        if (rc) return rc;
-
-        if ((rc = rec.GetData(pData))) return rc;
-        if ((rc = childResults.InsertRec(pData, rid))) return rc;
-    }
-
     while (1) {
         rc = rchild->GetNext(rec);
         if (rc == QL_ENDOFRESULT) break;
@@ -235,9 +224,9 @@ RC qJoin::Begin() {
         if ((rc = rchildResults.InsertRec(pData, rid))) return rc;
     }
 
-    if ((rc = childFs.OpenScan(childResults, INT, sizeof(int), 0, NO_OP, NULL))) return rc;
     if ((rc = rchildFs.OpenScan(rchildResults, INT, sizeof(int), 0, NO_OP, NULL))) return rc;
-    if ((rc = childFs.GetNextRec(rec1))) return rc;
+    if ((rc = child->GetNext(rec1))) return rc;
+
     initialized = 1;
     return 0;
 }
@@ -282,14 +271,11 @@ RC qJoin::GetNext(RM_Record &rec) {
         } else if (rc == RM_EOF) {
             if ((rc = rchildFs.CloseScan())) return rc;
             /* Get next tuple in child */
-            rc = childFs.GetNextRec(rec1);
+            rc = child->GetNext(rec1);
 
             /* Clean up when done scanning child */
-            if (rc == RM_EOF) {
-                if ((rc = childFs.CloseScan())) return rc;
-                if ((rc = rmm->CloseFile(childResults))) return rc;
+            if (rc == QL_ENDOFRESULT) {
                 if ((rc = rmm->CloseFile(rchildResults))) return rc;
-                if ((rc = rmm->DestroyFile(leftFilename))) return rc;
                 if ((rc = rmm->DestroyFile(rightFilename))) return rc;
                 return QL_ENDOFRESULT;
             } if (rc) return rc;
@@ -314,9 +300,13 @@ qProject::qProject(qNode *child, int nProjAttrs, const RelAttr projAttrs[]) {
     this->nProjAttrs = nProjAttrs;
     this->projAttrs = projAttrs;
 
+
+    /* When attrName == "*", project all attributes from child */
     if (nProjAttrs == 1 && strcmp(projAttrs[0].attrName, "*") == 0) {
         attrCount = child->attrCount;
         attributes = child->attributes;
+
+    /* Else, make new list of attributes for printing */
     } else {
         attrCount = nProjAttrs;
         attributes = new DataAttrInfo[attrCount];
@@ -421,6 +411,7 @@ RC qFilter::GetNext(RM_Record &rec) {
         if ((rc = rec.GetData(pData))) return rc;
 
         int conditionMet = 1;
+        /* Go through each condition and see if the tuple matches all conditions */
         for (int i=0; i < nConditions; i++) {
             Condition c = conditions[i];
             int comp;
@@ -447,22 +438,20 @@ void qFilter::PrintOp(string whitespace) {
 }
 
 
-qUpdate::qUpdate(qNode *child, const RelAttr &updAttr, int bIsValue, const RelAttr &rhsAttr, const Value &rhsValue, RM_Manager *rmm, IX_Manager *ixm) {
+qUpdate::qUpdate(qNode *child, const DataAttrInfo &updAttrInfo, int bIsValue, const RelAttr &rhsAttr, const Value &rhsValue, RM_Manager *rmm, IX_Manager *ixm) {
     type = UPDATE;
     this->child = child; this->rchild = NULL;
     attrCount = child->attrCount;
     attributes = child->attributes;
 
-    this->updAttr = updAttr;
+    this->updAttrInfo = updAttrInfo;
     this->bIsValue = bIsValue;
     this->rhsAttr = rhsAttr;
     this->rhsValue = rhsValue;
     this->rmm = rmm;
     this->ixm = ixm;
 
-    p = new Printer(attributes, attrCount);
-    
-    FindAttributeInfo(updAttr, attributes, attrCount, updAttrInfo);
+    p = new Printer(attributes, attrCount);    
     if (!bIsValue) FindAttributeInfo(rhsAttr, attributes, attrCount, rhsAttrInfo);
 
     initialized = 0;
