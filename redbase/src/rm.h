@@ -26,6 +26,7 @@ class qJoin;
 class RM_FileHandle;
 class RM_Record;
 class RM_FileScan;
+class LG_Manager;
 
 //
 // RM_FileHdr: Header structure for file
@@ -43,6 +44,7 @@ typedef struct RM_FileHdr RM_FileHdr;
 // RM_Manager: provides RM file management
 //
 class RM_Manager {
+    friend class LG_Manager;
 public:
     RM_Manager    (PF_Manager &pfm);
     ~RM_Manager   ();
@@ -50,15 +52,16 @@ public:
     RC CreateFile (const char *fileName, int recordSize);
     RC DestroyFile(const char *fileName);
     RC OpenFile   (const char *fileName, RM_FileHandle &fileHandle);
-
+    RC OpenFileWithFd(int fd, RM_FileHandle &fileHandle);
     RC CloseFile  (RM_FileHandle &fileHandle);
 
 private:
     PF_Manager *pfmanager_;
-
+    LG_Manager *lgmanager_;
 };
 
 
+struct LSN;
 //
 // RM_FileHandle: RM File interface
 //
@@ -74,19 +77,24 @@ public:
     RC GetRec     (const RID &rid, RM_Record &rec) const;
 
     RC InsertRec  (const char *pData, RID &rid);       // Insert a new record
-
+    RC InsertRecAtRid(const char *recData, const RID &rid);
     RC DeleteRec  (const RID &rid);                    // Delete a record
     RC UpdateRec  (const RM_Record &rec);              // Update a record
 
     // Forces a page (along with any contents stored in this class)
     // from the buffer pool to disk.  Default value forces all pages.
     RC ForcePages (PageNum pageNum = ALL_PAGES);
+    int GetRecordSize();
+    RC UpdatePageLSN(const RID &rid, const LSN &lsn);
+    RC GetPageLSN(RID rid, LSN &lsn);
 
 private:
     int valid_;
     RM_FileHdr hdr_;                               // file header
     int hdrModified_;                               // dirty flag for file hdr
     PF_FileHandle PFfileHandle_;
+    char filename[MAXNAME];
+    LG_Manager *lgm_;
 
     SlotNum FindAvailableSlot(char *pageData);
     RC GetPageData(PageNum pageNum, char *&pageData) const;
@@ -138,6 +146,7 @@ class RM_Record {
     friend class qJoin;
     friend class RM_FileHandle;
     friend class RM_FileScan;
+    friend class LG_Manager;
 
 public:
     RM_Record ();

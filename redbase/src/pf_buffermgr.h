@@ -45,6 +45,8 @@ struct PF_BufPageDesc {
 // PF_BufferMgr - manage the page buffer
 //
 class PF_BufferMgr {
+    friend class PF_Manager;
+    friend class LG_Manager;
 public:
 
     PF_BufferMgr     (int numPages);             // Constructor - allocate
@@ -108,6 +110,9 @@ private:
     int            first;                         // MRU page slot
     int            last;                          // LRU page slot
     int            free;                          // head of free list
+
+    int            logfd;
+    PF_FileHandle  *logFile;
 };
 
 #endif

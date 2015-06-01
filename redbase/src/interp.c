@@ -17,9 +17,11 @@
 
 #include "sm.h"
 #include "ql.h"
+#include "lg.h"
 
 extern SM_Manager *pSmm;
 extern QL_Manager *pQlm;
+extern LG_Manager *pLgm;
 
 #define E_OK                0
 #define E_INCOMPATIBLE      -1
@@ -74,6 +76,25 @@ RC interp(NODE *n)
       echo_query(n);
 
    switch(n -> kind){
+      case N_PRINTLOG:
+         errval = pLgm->PrintLog(0);
+         break;
+
+      case N_BEGINTRANSACTION:
+         errval = pLgm->BeginT();
+         break;
+
+      case N_COMMITTRANSACTION:
+         errval = pLgm->CommitT();
+         break;
+
+      case N_ABORTTRANSACTION:
+         errval = pLgm->AbortT();
+         break;
+
+      case N_CHECKPOINT:
+         errval = pLgm->Checkpoint();
+         break;
 
       case N_CREATETABLE:            /* for CreateTable() */
          {

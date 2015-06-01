@@ -21,6 +21,7 @@
 #include "sm.h"
 #include "ix.h"
 #include "rm.h"
+#include "lg.h"
 
 using namespace std;
 
@@ -90,11 +91,12 @@ int FindIndexedAttrCond(int nConditions, const Condition conditions[], DataAttrI
 //
 // Constructor for the QL Manager
 //
-QL_Manager::QL_Manager(SM_Manager &smm, IX_Manager &ixm, RM_Manager &rmm)
+QL_Manager::QL_Manager(SM_Manager &smm, IX_Manager &ixm, RM_Manager &rmm, LG_Manager &lgm)
 {
     smm_ = &smm;
     ixm_ = &ixm;
     rmm_ = &rmm;
+    lgm_ = &lgm;
 }
 
 //
@@ -380,10 +382,18 @@ RC QL_Manager::Insert(const char *relName,
         memcpy(newTuple + attributes[i].offset, values[i].data, attributes[i].attrLength);
     }
 
-    /* Insert a new tuple into record file */
+    int singleStatementXact = 0;
+    if (!lgm_->bInTransaction) {
+        singleStatementXact = 1;
+        lgm_->BeginT();
+    } 
+
+    /* Insert a new tuple into record file and create a corresponding log record */
     RM_FileHandle fh; RID rid;
     if ((rc = rmm_->OpenFile(relName, fh))) { delete[] attributes; return rc; }
+    
     if ((rc = fh.InsertRec(newTuple, rid))) { delete[] attributes; return rc; }
+
     if ((rc = rmm_->CloseFile(fh))) { delete[] attributes; return rc; }
 
     /* Insert index entry for an indexed attribute */
@@ -395,6 +405,8 @@ RC QL_Manager::Insert(const char *relName,
             if ((rc = ixm_->CloseIndex(ih))) { delete[] attributes; return rc; }
         }
     }
+
+    if (singleStatementXact) lgm_->CommitT();
 
     /* Update relation metadata (numTuples) */
     relMetadata->numTuples++;
@@ -513,14 +525,20 @@ RC QL_Manager::Delete(const char *relName,
     }
 
     /* Put qDelete as the root */
-    root = static_cast<qNode*> (new qDelete(root, relName, rmm_, ixm_));
+    root = static_cast<qNode*> (new qDelete(root, relName, rmm_, ixm_, lgm_));
 
+    int singleStatementXact = 0;
+    if (!lgm_->bInTransaction) {
+        singleStatementXact = 1;
+        lgm_->BeginT();
+    } 
     if ((rc = ExecuteQueryPlan(root)) == 0) {
         /* Update relation metadata (numTuples) */
         relMetadata->numTuples -= (static_cast<qDelete*> (root))->tuplesDeleted;
         if ((rc = smm_->relcatFile_.UpdateRec(relRecord))) { delete[] attributes; return rc; }
         if ((rc = smm_->relcatFile_.ForcePages())) { delete[] attributes; return rc; }        
     }
+    if (singleStatementXact) lgm_->CommitT();
 
     DeleteQueryPlan(root);
     delete[] attributes;
@@ -604,9 +622,17 @@ RC QL_Manager::Update(const char *relName,
     }
 
     /* Put qUpdate as the root */
-    root = static_cast<qNode*> (new qUpdate(root, updAttrInfo, bIsValue, rhsRelAttr, rhsValue, rmm_, ixm_));
+    root = static_cast<qNode*> (new qUpdate(root, updAttrInfo, bIsValue, rhsRelAttr, rhsValue, rmm_, ixm_, lgm_));
 
+
+    int singleStatementXact = 0;
+    if (!lgm_->bInTransaction) {
+        singleStatementXact = 1;
+        lgm_->BeginT();
+    } 
     rc = ExecuteQueryPlan(root);
+    if (singleStatementXact) lgm_->CommitT();
+
     DeleteQueryPlan(root);
     delete[] attributes;
     return 0;

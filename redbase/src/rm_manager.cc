@@ -1,4 +1,5 @@
 #include "rm_internal.h"
+#include "lg.h"
 #include <assert.h>
 
 
@@ -71,6 +72,9 @@ RC RM_Manager::OpenFile(const char *fileName, RM_FileHandle &fileHandle)
     PF_PageHandle headerPageHandle;
     rc = fileHandle.PFfileHandle_.GetFirstPage(headerPageHandle);
     if (rc) return rc;
+
+    fileHandle.lgm_ = lgmanager_;
+    strncpy(fileHandle.filename, fileName, MAXNAME);
 
     /* Copy file header to FileHandle object */
     char *headerPageData;

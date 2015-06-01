@@ -67,9 +67,9 @@ int main(int argc, char *argv[])
 
     PF_Manager pfm;
     RM_Manager rmm(pfm);
+    LG_Manager lgm(pfm, rmm);
     IX_Manager ixm(pfm);
-    SM_Manager smm(ixm, rmm);
-
+    SM_Manager smm(ixm, rmm, lgm);
 
     /* Create record files for two catalogs */
     if ((rc = rmm.CreateFile((char *)"relcat", sizeof(RelcatTuple)))) goto terminate;

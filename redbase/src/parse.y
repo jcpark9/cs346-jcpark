@@ -28,6 +28,7 @@
 #include "ix.h"     // for IX_PrintError
 #include "sm.h"
 #include "ql.h"
+#include "lg.h"
 
 using namespace std;
 
@@ -62,9 +63,12 @@ int bExit;                 // when to return from RBparse
 
 int bQueryPlans;           // When to print the query plans
 
+int bAbort;
+
 PF_Manager *pPfm;          // PF component manager
 SM_Manager *pSmm;          // SM component manager
 QL_Manager *pQlm;          // QL component manager
+LG_Manager *pLgm;          // LG component manager
 
 %}
 
@@ -76,7 +80,13 @@ QL_Manager *pQlm;          // QL component manager
     NODE *n;
 }
 
-%token     
+%token
+      RW_BEGIN
+      RW_COMMIT
+      RW_ABORT
+      RW_CHECKPOINT
+      RW_TRANSACTION
+      RW_PROGRAM
       RW_CREATE
       RW_DROP
       RW_TABLE
@@ -85,6 +95,7 @@ QL_Manager *pQlm;          // QL component manager
       RW_SET
       RW_HELP
       RW_PRINT
+      RW_LOG
       RW_EXIT
       RW_SELECT
       RW_FROM
@@ -127,6 +138,7 @@ QL_Manager *pQlm;          // QL component manager
       ddl
       dml
       utility
+      xact
       createtable
       createindex
       droptable
@@ -156,6 +168,12 @@ QL_Manager *pQlm;          // QL component manager
       buffer
       statistics
       queryplans
+      begintransaction
+      committransaction
+      aborttransaction
+      checkpoint
+      printlog
+      abortprogram
 %%
 
 start
@@ -196,10 +214,19 @@ command
    : ddl
    | dml
    | utility
+   | xact
    | nothing
    {
       $$ = NULL;
    }
+   ;
+
+xact
+   : begintransaction
+   | aborttransaction
+   | committransaction
+   | checkpoint
+   | printlog
    ;
 
 ddl
@@ -224,7 +251,8 @@ utility
    | print
    | buffer
    | statistics 
-   | queryplans 
+   | queryplans
+   | abortprogram 
    ;
 
 queryplans
@@ -242,7 +270,13 @@ queryplans
    }
    ;
 
-   
+abortprogram
+   : RW_ABORT RW_PROGRAM
+   {
+      bAbort = 1;
+      cout << "Abort when executing the next statement .\n";
+      $$ = NULL;
+   }   
 
 buffer
    : RW_RESET RW_BUFFER
@@ -288,6 +322,36 @@ statistics
       $$ = NULL;
    }
    ;
+
+begintransaction
+   : RW_BEGIN RW_TRANSACTION
+   {
+      $$ = newnode(N_BEGINTRANSACTION);
+   };
+
+committransaction
+   : RW_COMMIT RW_TRANSACTION
+   {
+      $$ = newnode(N_COMMITTRANSACTION);
+   };
+
+aborttransaction
+   : RW_ABORT RW_TRANSACTION
+   {
+      $$ = newnode(N_ABORTTRANSACTION);
+   };
+
+checkpoint
+   : RW_CHECKPOINT
+   {
+      $$ = newnode(N_CHECKPOINT);
+   };
+
+printlog
+   : RW_PRINT RW_LOG
+   {
+      $$ = newnode(N_PRINTLOG);
+   };
 
 createtable
    : RW_CREATE RW_TABLE T_STRING '(' non_mt_attrtype_list ')'
@@ -576,6 +640,8 @@ void PrintError(RC rc)
       SM_PrintError(rc);
    else if (abs(rc) <= END_QL_WARN)
       QL_PrintError(rc);
+   else if (abs(rc) <= END_LG_WARN)
+      LG_PrintError(rc);
    else
       cerr << "Error code out of range: " << rc << "\n";
 }
@@ -585,7 +651,7 @@ void PrintError(RC rc)
 //
 // Desc: Parse redbase commands
 //
-void RBparse(PF_Manager &pfm, SM_Manager &smm, QL_Manager &qlm)
+void RBparse(PF_Manager &pfm, SM_Manager &smm, QL_Manager &qlm, LG_Manager &lgm)
 {
    RC rc;
 
@@ -593,6 +659,7 @@ void RBparse(PF_Manager &pfm, SM_Manager &smm, QL_Manager &qlm)
    pPfm  = &pfm;
    pSmm  = &smm;
    pQlm  = &qlm;
+   pLgm  = &lgm;
    bExit = 0;
    bQueryPlans = 0;
 

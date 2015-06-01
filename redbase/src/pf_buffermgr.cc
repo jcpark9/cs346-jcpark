@@ -132,6 +132,9 @@ PF_BufferMgr::PF_BufferMgr(int _numPages) : hashTable(PF_HASH_TBL_SIZE)
    free = 0;
    first = last = INVALID_SLOT;
 
+   logfd = -1;
+   logFile = NULL;
+
 #ifdef PF_LOG
    WriteLog("Succesfully created the buffer manager.\n");
 #endif
@@ -877,6 +880,12 @@ RC PF_BufferMgr::WritePage(int fd, PageNum pageNum, char *source)
 #ifdef PF_STATS
    pStatisticsMgr->Register(PF_WRITEPAGE, STAT_ADDONE);
 #endif
+
+   if (fd != logfd && logFile) {
+      RC rc = logFile->ForcePages(ALL_PAGES);
+      if (rc) return rc;
+      std::cout << "LOG FLUSHED" << std::endl; 
+   }
 
    // seek to the appropriate place (cast to long for PC's)
    long offset = pageNum * (long)pageSize + PF_FILE_HDR_SIZE;

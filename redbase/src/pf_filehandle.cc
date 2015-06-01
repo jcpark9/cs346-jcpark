@@ -9,6 +9,7 @@
 #include <sys/types.h>
 #include "pf_internal.h"
 #include "pf_buffermgr.h"
+#include <iostream>
 
 //
 // PF_FileHandle

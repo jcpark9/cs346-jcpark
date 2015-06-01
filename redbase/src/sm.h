@@ -15,6 +15,7 @@
 #include "parser.h"
 #include "rm.h"
 #include "ix.h"
+#include "lg.h"
 #include "printer.h"
 
 #define CATALOGINDEXNO 0
@@ -45,7 +46,7 @@ static const int AttrcatCount = 6;
 class SM_Manager {
     friend class QL_Manager;
 public:
-    SM_Manager    (IX_Manager &ixm, RM_Manager &rmm);
+    SM_Manager    (IX_Manager &ixm, RM_Manager &rmm, LG_Manager &lgm);
     ~SM_Manager   ();                             // Destructor
 
     RC OpenDb     (const char *dbName);           // Open the database
@@ -76,6 +77,7 @@ public:
 private:
     IX_Manager *ixm_;
     RM_Manager *rmm_;
+    LG_Manager *lgm_;
     RM_FileHandle attrcatFile_;
     RM_FileHandle relcatFile_;
     IX_IndexHandle relcatIndex_;

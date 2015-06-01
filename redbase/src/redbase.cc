@@ -13,6 +13,7 @@
 #include "rm.h"
 #include "sm.h"
 #include "ql.h"
+#include "lg.h"
 
 using namespace std;
 
@@ -41,9 +42,10 @@ int main(int argc, char *argv[])
 
     PF_Manager pfm;
     RM_Manager rmm(pfm);
+    LG_Manager lgm(pfm, rmm);
     IX_Manager ixm(pfm);
-    SM_Manager smm(ixm, rmm);
-    QL_Manager qlm(smm, ixm, rmm);
+    SM_Manager smm(ixm, rmm, lgm);
+    QL_Manager qlm(smm, ixm, rmm, lgm);
 
     // open the database
     if ((rc = smm.OpenDb(dbname))) {
@@ -52,7 +54,7 @@ int main(int argc, char *argv[])
     }
    
     // call the parser
-    RBparse(pfm, smm, qlm);
+    RBparse(pfm, smm, qlm, lgm);
     
     // close the database
     if ((rc = smm.CloseDb())) {

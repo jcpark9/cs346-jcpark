@@ -22,7 +22,7 @@
 //
 class QL_Manager {
 public:
-    QL_Manager (SM_Manager &smm, IX_Manager &ixm, RM_Manager &rmm);
+    QL_Manager (SM_Manager &smm, IX_Manager &ixm, RM_Manager &rmm, LG_Manager &lgm);
     ~QL_Manager();                       // Destructor
 
     RC Select  (int nSelAttrs,           // # attrs in select clause
@@ -52,6 +52,7 @@ private:
     RM_Manager *rmm_;
     IX_Manager *ixm_;
     SM_Manager *smm_;
+    LG_Manager *lgm_;
     RC ValidateAttrForSelect(const RelAttr &attr, int nRelations, 
         const char * const relations[], AttrType &attrType);
 };

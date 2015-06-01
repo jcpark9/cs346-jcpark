@@ -12,7 +12,7 @@
 #include <sys/types.h>
 #include "pf_internal.h"
 #include "pf_buffermgr.h"
-
+#include <iostream>
 //
 // PF_Manager
 //
@@ -162,6 +162,9 @@ RC PF_Manager::OpenFile (const char *fileName, PF_FileHandle &fileHandle)
    fileHandle.pBufferMgr = pBufferMgr;
    fileHandle.bFileOpen = TRUE;
 
+   if (!strcmp(fileName, "log")) pBufferMgr->logfd = fileHandle.unixfd;
+   if (!strcmp(fileName, "log")) pBufferMgr->logFile = &fileHandle;
+
    // Return ok
    return 0;
 
@@ -173,6 +176,7 @@ err:
    // Return error
    return (rc);
 }
+
 
 //
 // CloseFile

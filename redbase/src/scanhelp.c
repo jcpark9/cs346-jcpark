@@ -82,6 +82,21 @@ static int get_id(char *s)
    if((len = lower(string, s, MAXSTRINGLEN)) == MAXSTRINGLEN)
       return NOTOKEN;
 
+   /* EX layer lexemes */
+   if(!strcmp(string, "begin"))
+      return yylval.ival = RW_BEGIN;
+   if(!strcmp(string, "abort"))
+      return yylval.ival = RW_ABORT;
+   if(!strcmp(string, "commit"))
+      return yylval.ival = RW_COMMIT;
+   if(!strcmp(string, "checkpoint"))
+      return yylval.ival = RW_CHECKPOINT;
+   if(!strcmp(string, "transaction"))
+      return yylval.ival = RW_TRANSACTION;
+   if(!strcmp(string, "log"))
+      return yylval.ival = RW_LOG;
+   if(!strcmp(string, "program"))
+      return yylval.ival = RW_PROGRAM;
    /*  SM layer lexemes */
 
    if(!strcmp(string, "create"))

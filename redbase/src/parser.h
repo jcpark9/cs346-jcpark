@@ -55,8 +55,9 @@ std::ostream &operator<<(std::ostream &s, const AttrType &at);
 //
 class QL_Manager;
 class SM_Manager;
+class LG_Manager;
 
-void RBparse(PF_Manager &pfm, SM_Manager &smm, QL_Manager &qlm);
+void RBparse(PF_Manager &pfm, SM_Manager &smm, QL_Manager &qlm, LG_Manager &lgm);
 
 //
 // Error printing function; calls component-specific functions
@@ -67,5 +68,6 @@ void PrintError(RC rc);
 // query plan chosen for the SFW query will be displayed.  When
 // bQueryPlans is 0 then no query plan is shown.
 extern int bQueryPlans;
+extern int bAbort;
 
 #endif

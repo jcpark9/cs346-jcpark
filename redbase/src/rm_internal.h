@@ -5,6 +5,7 @@
 #include <cstdlib>
 #include <cstring>
 #include "rm.h"
+#include "lg.h"
 
 //
 // Constants and defines
@@ -23,6 +24,7 @@
 struct RM_PageHdr {
 	int numRecords;				// Number of records populating this page
 	int nextFree;				// page# of page with free slot
+	LSN pageLSN;
 };
 
 /* RM_PageHdr in each page is followed by bitmap (unsigned char[]) to indicate availability of slots */

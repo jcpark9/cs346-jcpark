@@ -1,4 +1,5 @@
 #include "ql_node.h"
+#include "lg.h"
 
 void PrintCondition(string whitespace, const Condition &c)
 {
@@ -438,7 +439,7 @@ void qFilter::PrintOp(string whitespace) {
 }
 
 
-qUpdate::qUpdate(qNode *child, const DataAttrInfo &updAttrInfo, int bIsValue, const RelAttr &rhsAttr, const Value &rhsValue, RM_Manager *rmm, IX_Manager *ixm) {
+qUpdate::qUpdate(qNode *child, const DataAttrInfo &updAttrInfo, int bIsValue, const RelAttr &rhsAttr, const Value &rhsValue, RM_Manager *rmm, IX_Manager *ixm, LG_Manager *lgm) {
     type = UPDATE;
     this->child = child; this->rchild = NULL;
     attrCount = child->attrCount;
@@ -450,6 +451,7 @@ qUpdate::qUpdate(qNode *child, const DataAttrInfo &updAttrInfo, int bIsValue, co
     this->rhsValue = rhsValue;
     this->rmm = rmm;
     this->ixm = ixm;
+    this->lgm = lgm;
 
     p = new Printer(attributes, attrCount);    
     if (!bIsValue) FindAttributeInfo(rhsAttr, attributes, attrCount, rhsAttrInfo);
@@ -508,6 +510,21 @@ RC qUpdate::GetNext(RM_Record &rec) {
         memcpy(pData + updAttrInfo.offset, pData + rhsAttrInfo.offset, updAttrInfo.attrLength);
     }
 
+    /* Insert log record */
+    LG_FullRec logRec;
+    memset(&logRec, 0, sizeof(LG_FullRec));
+    logRec.type = L_UPDATE;
+    logRec.offset = updAttrInfo.offset;
+    logRec.dataSize = updAttrInfo.attrLength;
+    strncpy(logRec.fileName, updAttrInfo.relName, MAXNAME);
+    logRec.rid = rid;
+    if (bIsValue) {
+        if ((rc = lgm->InsertLogRec(logRec, pData + updAttrInfo.offset, (char *)rhsValue.data))) return rc;
+    } else {
+        if ((rc = lgm->InsertLogRec(logRec, pData + updAttrInfo.offset, pData + rhsAttrInfo.offset))) return rc;
+    }
+    if ((rc = fh.UpdatePageLSN(rid, logRec.lsn))) return rc;
+
     /* Update record */
     if ((rc = fh.UpdateRec(rec))) return rc;
 
@@ -531,7 +548,7 @@ void qUpdate::PrintOp(string whitespace) {
 }
 
 
-qDelete::qDelete(qNode *child, const char *relName, RM_Manager *rmm, IX_Manager *ixm) {
+qDelete::qDelete(qNode *child, const char *relName, RM_Manager *rmm, IX_Manager *ixm, LG_Manager *lgm) {
     type = DELETE;
     this->child = child; this->rchild = NULL;
     this->attrCount = child->attrCount;
@@ -540,6 +557,7 @@ qDelete::qDelete(qNode *child, const char *relName, RM_Manager *rmm, IX_Manager 
     this->relName = relName;
     this->rmm = rmm;
     this->ixm = ixm;
+    this->lgm = lgm;
 
     ih = new IX_IndexHandle[attrCount];
     p = new Printer(attributes, attrCount);
@@ -591,6 +609,17 @@ RC qDelete::GetNext(RM_Record &rec) {
     if ((rc = rec.GetData(pData))) return rc;
 
     if ((rc = rec.GetRid(rid))) return rc;
+
+    /* Insert Log Record */
+    LG_FullRec logRec;
+    memset(&logRec, 0, sizeof(LG_FullRec));
+    logRec.type = L_DELETE;
+    logRec.offset = 0;
+    logRec.dataSize = fh.GetRecordSize();
+    strncpy(logRec.fileName, relName, MAXNAME);
+    logRec.rid = rid;
+    if ((rc = lgm->InsertLogRec(logRec, pData, NULL))) return rc;
+    if ((rc = fh.UpdatePageLSN(rid, logRec.lsn))) return rc;
 
     /* Delete record */
     if ((rc = fh.DeleteRec(rid))) return rc;

@@ -18,10 +18,11 @@
 
 using namespace std;
 
-SM_Manager::SM_Manager(IX_Manager &ixm, RM_Manager &rmm)
+SM_Manager::SM_Manager(IX_Manager &ixm, RM_Manager &rmm, LG_Manager &lgm)
 {
     ixm_ = &(ixm);
     rmm_ = &(rmm);
+    lgm_ = &(lgm);
 }
 
 SM_Manager::~SM_Manager()
@@ -31,6 +32,8 @@ SM_Manager::~SM_Manager()
 RC SM_Manager::OpenDb(const char *dbName)
 {
     RC rc;
+    if ((rc = lgm_->CreateLog())) return rc;
+    
     /* Open files and indices for catalog relations */
     if ((rc = rmm_->OpenFile("relcat",relcatFile_))) return rc;
     if ((rc = rmm_->OpenFile("attrcat", attrcatFile_))) return rc;
@@ -42,6 +45,8 @@ RC SM_Manager::OpenDb(const char *dbName)
 RC SM_Manager::CloseDb()
 {
     RC rc;
+    if ((rc = lgm_->DestroyLog())) return rc;
+
     /* Close files and indices for catalog relations */
     if ((rc = rmm_->CloseFile(relcatFile_))) return rc;
     if ((rc = rmm_->CloseFile(attrcatFile_))) return rc;
@@ -349,6 +354,12 @@ RC SM_Manager::Load(const char *relName,
     int attrCount;
     if ((rc = FillDataAttributes(relName, attributes, attrCount))) return rc;
 
+    int singleStatementXact = 0;
+    if (!lgm_->bInTransaction) {
+        singleStatementXact = 1;
+        lgm_->BeginT();
+    }
+
     /* Iterate through each line (tuple) */
     char line[MAXATTRS * (MAXSTRINGLEN+1)];
     int numTuplesAdded = 0;
@@ -385,7 +396,7 @@ RC SM_Manager::Load(const char *relName,
         /* Insert tuple into relation */
         if ((rc = fh.InsertRec(recData, rid))) return rc;
         numTuplesAdded++;
-        
+
         /* Insert index entry for indexed attributes */
         for (int i = 0; i < attrCount; i++) {
             if (attributes[i].indexNo != -1) {
@@ -396,6 +407,8 @@ RC SM_Manager::Load(const char *relName,
             }
         }
     }
+
+    if (singleStatementXact) lgm_->CommitT();
 
     /* Update relcat catalog */
     relMetadata->numTuples += numTuplesAdded;

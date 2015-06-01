@@ -66,9 +66,12 @@ struct PF_FileHdr {
 // PF_FileHandle: PF File interface
 //
 class PF_BufferMgr;
+class LG_Manager;
 
 class PF_FileHandle {
    friend class PF_Manager;
+   friend class LG_Manager;
+   friend class RM_FileHandle;
 public:
    PF_FileHandle  ();                            // Default constructor
    ~PF_FileHandle ();                            // Destructor

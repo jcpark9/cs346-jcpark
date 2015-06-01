@@ -138,7 +138,7 @@ private:
 /* Updates tuples returned by child */
 class qUpdate : public qNode {
 public:
-    qUpdate(qNode *child, const DataAttrInfo &updAttrInfo, int bIsValue, const RelAttr &rhsAttr, const Value &rhsValue, RM_Manager *rmm, IX_Manager *ixm);
+    qUpdate(qNode *child, const DataAttrInfo &updAttrInfo, int bIsValue, const RelAttr &rhsAttr, const Value &rhsValue, RM_Manager *rmm, IX_Manager *ixm, LG_Manager *lgm);
     ~qUpdate();
     RC Begin();
     RC GetNext(RM_Record &rec);
@@ -150,6 +150,7 @@ private:
 
     RM_Manager *rmm;
     IX_Manager *ixm;
+    LG_Manager *lgm;
     IX_IndexHandle ih;
     RM_FileHandle fh;
 
@@ -164,7 +165,7 @@ private:
 class qDelete : public qNode {
 friend class QL_Manager;
 public:
-    qDelete(qNode *child, const char *relName, RM_Manager *rmm, IX_Manager *ixm);
+    qDelete(qNode *child, const char *relName, RM_Manager *rmm, IX_Manager *ixm, LG_Manager *lgm);
     ~qDelete();
     RC Begin();
     RC GetNext(RM_Record &rec);
@@ -176,6 +177,7 @@ private:
 
     RM_Manager *rmm;
     IX_Manager *ixm;
+    LG_Manager *lgm;
     IX_IndexHandle *ih;
     RM_FileHandle fh;
     int tuplesDeleted;          // # of tuples deleted so far
