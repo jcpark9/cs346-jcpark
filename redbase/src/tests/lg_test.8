@@ -1,0 +1,14 @@
+create table t1(id  i,  char  c10,  float  f);
+create table t2(id  i,  char  c10,  float  f);
+
+begin transaction;
+load t1("../t1.data");
+update t1 set char = "UPDATED";
+load t2("../t2.data");
+commit transaction;
+
+begin transaction;
+insert into t2 values (300,"s300",300.0);
+update t2 set char = "UPDATED';
+abort on 10;
+delete from t2 where char < "s170";

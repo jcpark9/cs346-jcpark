@@ -364,6 +364,11 @@ RC QL_Manager::Insert(const char *relName,
     for (i = 0; i < nValues; i++)
         cout << "   values[" << i << "]:" << values[i] << "\n";
     
+    if (bAbort && (rand() % 100) < abortProb) {
+        cout << "[ CRASH WHILE INSERT ]" << endl;
+        abort();
+    }
+
     RM_Record relRecord;
     if ((rc = smm_->FindRelMetadata(relName, relRecord))) return rc;
     RelcatTuple *relMetadata = smm_->GetRelcatTuple(relRecord);

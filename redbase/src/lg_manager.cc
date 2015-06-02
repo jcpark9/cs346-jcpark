@@ -21,10 +21,10 @@ LG_Manager::~LG_Manager() {
 RC LG_Manager::CreateLog() {
     RC rc = pfm_->CreateFile(LOGFILENAME);
     if (rc == PF_UNIX) {
-        cout << "Crash detected. Starting recovery... " << endl;
+        cout << "Crash detected. Starting recovery...\n" << endl;
         if ((rc = pfm_->OpenFile(LOGFILENAME, logFile_))) return rc;
         if ((rc = Recover())) return rc;
-        cout << "Recovery complete. " << endl;
+        cout << "Recovery complete.\n" << endl;
     } else if (rc) {
         return rc;
     } else {
@@ -121,6 +121,7 @@ RC LG_Manager::UpdateLastRecNextLSN(LSN nextLSN) {
     if (lastRec.pn != LG_EOF) {
         PF_PageHandle ph;
         if ((rc = logFile_.GetThisPage(lastRec.pn, ph))) return rc;
+
         LG_Rec *lastLogRecData = (LG_Rec *) GetLogRecData(lastRec, ph);
         lastLogRecData->nextLSN = nextLSN;
         if ((rc = logFile_.MarkDirty(lastRec.pn))) return rc;
@@ -165,6 +166,7 @@ RC LG_Manager::BeginT() {
     return 0;
 }
 
+/* Print log contents of rec */
 void DumpLogContent(LG_Rec *rec) {
     cout << "------------------------------------------------------------------------------" << endl;
 
@@ -219,22 +221,21 @@ void DumpLogContent(LG_Rec *rec) {
 }
 
 
-RC LG_Manager::PrintLog(int inRecovery) {
+/* Print all log records in the file from beginning to end */
+RC LG_Manager::PrintLog() {
     cout << "print log" << endl;
     RC rc;
 
-    if (!inRecovery && lastRec.pn == LG_EOF) {
+    PF_PageHandle ph;
+    rc = logFile_.GetFirstPage(ph);
+    if (rc == PF_EOF) {
         cout << "The log is empty" << endl;
         return 0;
-    }
-
-    PF_PageHandle ph;
-    if ((rc = logFile_.GetFirstPage(ph))) return rc;
+    } else if (rc) return rc;
 
     char *pData; PageNum pn;
     ph.GetData(pData);
     ph.GetPageNum(pn);
-    cout << "PL PN" << pn << endl;
     LG_Rec *rec = (LG_Rec *) pData;
 
     while (true) {
@@ -289,6 +290,8 @@ RC LG_Manager::AbortT() {
     return rc;
 }
 
+
+/* Resets the log after writing all dirty record pages to disk */
 RC LG_Manager::Checkpoint() {
     cout << "checkpoint" << endl;
     RC rc;
@@ -318,12 +321,20 @@ RC LG_Manager::Undo(LSN &undoLSN, const int XID) {
     /* Stop undoing when LG_EOF is encountered */
     if (undoLSN.pn == LG_EOF) return 0;
 
+    if (bAbort) {
+        cout << "Undoing LSN " << undoLSN.pn << "." << undoLSN.offset << endl; 
+        if ((rand() % 100) < abortProb) {
+            cout << "[ CRASH WHILE UNDO ]" << endl;
+            abort();
+        }
+    }
+
     PF_PageHandle ph;
     if ((rc = logFile_.GetThisPage(undoLSN.pn, ph))) return rc;
 
     LG_Rec *logData = (LG_Rec *) GetLogRecData(undoLSN, ph);
     LogType type = logData->type;
-    DumpLogContent(logData);
+    //DumpLogContent(logData);
 
     /* Stop undoing when log record of another transaction is encountered
      * or if the record is COMMIT or END
@@ -341,7 +352,6 @@ RC LG_Manager::Undo(LSN &undoLSN, const int XID) {
         char *filename = logRec->fileName;
         if ((rc = rmm_->OpenFile(filename, fh))) return rc;
 
-        cout << "A" << endl;
         // Insert a compensation log record
         LG_FullRec clrRec;
         clrRec.XID = XID;
@@ -351,7 +361,6 @@ RC LG_Manager::Undo(LSN &undoLSN, const int XID) {
         strncpy(clrRec.fileName, filename, MAXNAME);
         clrRec.rid = rid;
         clrRec.undonextLSN = logRec->prevLSN;
-        cout << "B" << endl;
 
         if (type == L_INSERT) {
             clrRec.undoType = L_DELETE;
@@ -365,8 +374,6 @@ RC LG_Manager::Undo(LSN &undoLSN, const int XID) {
         }
         if (rc) return rc;
         if ((rc = fh.UpdatePageLSN(rid, clrRec.lsn))) return rc;
-
-        cout << "C" << endl;
 
         PageNum pn;
         rid.GetPageNum(pn);
@@ -383,28 +390,21 @@ RC LG_Manager::Undo(LSN &undoLSN, const int XID) {
             memcpy(rmrec.contents_ + logRec->offset, oldValue, logRec->dataSize);
             if ((rc = fh.UpdateRec(rmrec))) return rc;
         }
-        cout << "D" << endl;
 
         if ((rc = rmm_->CloseFile(fh))) return rc;
     }
 
-    cout << "E" << endl;
     if ((rc = logFile_.UnpinPage(undoLSN.pn))) return rc;
     
-    cout << "F" << endl;
     /* Keep undoing previous log record */
     LSN prevLSN;
     if (type == L_CLR) prevLSN = logRec->undonextLSN;
     else prevLSN = logData->prevLSN;
-    cout << "prevLSN" << prevLSN.pn << "." << prevLSN.offset << endl;
     return Undo(prevLSN, XID);
 }
 
 /* Returns 1 if pageLSN is lesser than redoLSN */
 int CompareLSN(const LSN &pageLSN, const LSN &redoLSN) {
-    cout << "PageLSN" << pageLSN.pn << ":" << pageLSN.offset << endl;
-    cout << "PageLSN" << redoLSN.pn << ":" << redoLSN.offset << endl;
-
     if (pageLSN.pn < redoLSN.pn) return 1;
     if (pageLSN.pn > redoLSN.pn) return 0;
     if (pageLSN.offset < redoLSN.offset) return 1;
@@ -419,8 +419,9 @@ RC LG_Manager::Redo(LSN &redoLSN, LSN &lastLSN, int &lastXID) {
 
     LG_Rec *logData = (LG_Rec *) GetLogRecData(redoLSN, ph);
     LogType type = logData->type;
-    DumpLogContent(logData);
+    //DumpLogContent(logData);
 
+    /* Redos INSERT, DELETE, UPDATE and CLR records */
     if (type == L_INSERT || type == L_DELETE || type == L_UPDATE || type == L_CLR) {
         LG_FullRec *logRec = (LG_FullRec *) logData;
         RM_FileHandle fh;
@@ -432,7 +433,7 @@ RC LG_Manager::Redo(LSN &redoLSN, LSN &lastLSN, int &lastXID) {
         LSN pageLSN;
         if ((rc = fh.GetPageLSN(rid, pageLSN))) return rc;
         
-        // Redo if pageLSN < LSN of log record
+        /* Redo if pageLSN < LSN of log record */
         if (CompareLSN(pageLSN, redoLSN)) {
             LogType undoType = logRec->undoType;
             /* Execute Redo */
@@ -470,14 +471,20 @@ RC LG_Manager::Redo(LSN &redoLSN, LSN &lastLSN, int &lastXID) {
 
 RC LG_Manager::Recover() {
     RC rc;
-    if ((rc = PrintLog(1))) return rc;
+
+    PF_PageHandle ph;
+    rc = logFile_.GetFirstPage(ph);
+    if (rc == PF_EOF) {
+        cout << "The log is empty" << endl;
+        return 0;
+    } else if (rc) return rc;
+
+    cout << "[ STARTING REDO PHASE ]" << endl;
     LSN firstLSN = LSN(0, 0);
     LSN lastLSN; int lastXID;
     if ((rc = Redo(firstLSN, lastLSN, lastXID))) return rc;
 
-    cout << lastLSN.pn << "." << lastLSN.offset << endl;
-    cout << lastXID << endl;
-    cout << "TIME FOR UNDO" << endl;
+    cout << "[ STARTING UNDO PHASE ]" << endl;
     if ((rc = Undo(lastLSN, lastXID))) return rc;
     return 0;
 }

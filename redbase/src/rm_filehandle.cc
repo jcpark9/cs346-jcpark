@@ -206,7 +206,7 @@ RC RM_FileHandle::UpdateRec(const RM_Record &rec)
     return PFfileHandle_.UnpinPage(pageNum);
 }
 
-
+/* Insert recData at position indicated by rid */
 RC RM_FileHandle::InsertRecAtRid(const char *recData, const RID &rid)
 {
     RC rc;
@@ -236,11 +236,13 @@ RC RM_FileHandle::InsertRecAtRid(const char *recData, const RID &rid)
     return PFfileHandle_.UnpinPage(pageNum);
 }
 
-
+/* Returns fixed size of the records in this file */
 int RM_FileHandle::GetRecordSize() {
     return hdr_.recordSize;
 }
 
+/* Returns pageLSN (last log record that touched this file) 
+   in the page header */
 RC RM_FileHandle::GetPageLSN(RID rid, LSN &lsn) {
     PageNum pn; char *pData;
     rid.GetPageNum(pn);
@@ -304,6 +306,7 @@ int GetSlotBit(int slotNum, char *pageData, Mode mode) {
     return 0;
 }
 
+/* Updates the page LSN in the page header of the page indicated by rid */
 RC RM_FileHandle::UpdatePageLSN(const RID &rid, const LSN &lsn) {
     RC rc; PageNum pn;
     if ((rc = rid.GetPageNum(pn))) return rc;

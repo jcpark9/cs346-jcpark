@@ -1,0 +1,23 @@
+create table t1(id  i,  char  c10,  float  f);
+create table t2(id  i,  char  c10,  float  f);
+
+begin transaction;
+
+load t1("../t1.data");
+load t2("../t2.data");
+
+commit transaction;
+
+begin transaction;
+
+insert into t1 values (-1, "-1", -1.0);
+delete from t1 where id > 50;
+update t2 set char = "updated" where id > 150;
+
+select * from t1;
+select * from t2;
+
+abort transaction;
+
+select * from t1;
+select * from t2;

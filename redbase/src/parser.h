@@ -69,5 +69,6 @@ void PrintError(RC rc);
 // bQueryPlans is 0 then no query plan is shown.
 extern int bQueryPlans;
 extern int bAbort;
+extern int abortProb;
 
 #endif

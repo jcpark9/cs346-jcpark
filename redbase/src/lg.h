@@ -89,7 +89,7 @@ public:
     RC AbortT();
     RC Checkpoint();
     RC Recover();
-    RC PrintLog(int inRecovery);
+    RC PrintLog();
 
 private:
     RC Undo(LSN &undoLSN, const int XID);
@@ -106,9 +106,9 @@ private:
     int bInTransaction;             // 1 if there is a transaction running currently
     LSN lastRec;                    // last log record
     int lastRecSize;                // Size of the last log record
-    int currXID;                    // ID for the currnet transaction
+    int currXID;                    // ID for the current transaction
     
-    set<string> dirtyFiles;              // unixfd of files where INSERT/DELETE/UPDATE operations occurred
+    set<string> dirtyFiles;         // dirty files where INSERT/DELETE/UPDATE operations occurred
 };
 
 //
@@ -119,9 +119,7 @@ void LG_PrintError(RC rc);
 #define LG_INTRANSACTION                (START_LG_WARN + 0)
 #define LG_NOTINTRANSACTION             (START_LG_WARN + 1)
 #define LG_LOGEMPTY                     (START_LG_WARN + 2)
-
-#define LG_V                            (START_LG_WARN+50)
-#define LG_LASTWARN                     LG_V
+#define LG_LASTWARN                     LG_LOGEMPTY
 
 #define LG_LASTERROR                    (END_LG_ERR)
 

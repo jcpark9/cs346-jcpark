@@ -84,6 +84,7 @@ public:
     // Forces a page (along with any contents stored in this class)
     // from the buffer pool to disk.  Default value forces all pages.
     RC ForcePages (PageNum pageNum = ALL_PAGES);
+    
     int GetRecordSize();
     RC UpdatePageLSN(const RID &rid, const LSN &lsn);
     RC GetPageLSN(RID rid, LSN &lsn);

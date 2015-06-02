@@ -884,7 +884,6 @@ RC PF_BufferMgr::WritePage(int fd, PageNum pageNum, char *source)
    if (fd != logfd && logFile) {
       RC rc = logFile->ForcePages(ALL_PAGES);
       if (rc) return rc;
-      std::cout << "LOG FLUSHED" << std::endl; 
    }
 
    // seek to the appropriate place (cast to long for PC's)

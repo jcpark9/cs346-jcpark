@@ -1,0 +1,89 @@
+
+CREATEDB
+1. Begin Transaction; 
+   Commit Transaction;
+   Print Log;
+   Checkpoint;
+   Print Log;
+   Abort();
+
+   Boot again;
+   Select;
+DESTROYDB
+
+CREATEDB
+2. Begin Transaction;
+   Insert ()
+   Delete ()
+   Update ()
+   Abort Transaction;
+DESTROYDB
+
+CREATEDB
+3. Begin Transaction;
+   Load();
+   Commit Transaction;
+   Begin Transaction;
+   Abort program;
+   Abort() while Load ();
+
+4. Select();
+DESTROYDB
+
+CREATEDB
+5. Insert;
+   abort during Update;
+
+6. Select();
+DESTROYDB
+
+
+CREATEDB
+7. Begin Transaction;
+	   Load;
+	   Update;
+   End Transaction;
+   Begin Transaction;
+       Load;
+       Update;
+   End Transaction;
+   Begin Transaction;
+       Load;
+   	   abort during Delete;
+   End Transaction;
+
+8. Select();
+DESTROYDB
+
+
+CREATEDB
+7. Begin Transaction;
+	   Load;
+   End Transaction;
+   Begin Transaction;
+       Load;
+   End Transaction;
+   Begin Transaction;
+       Load;
+       abort;
+
+8. Abort during Redo();
+
+9. Select();
+DESTROYDB
+
+
+CREATEDB
+7. Begin Transaction;
+	   Load;
+   End Transaction;
+   Begin Transaction;
+       Insert;
+       Delete;
+       Update;
+       abort;
+
+8. Abort during Undo();
+
+8. Select();
+DESTROYDB

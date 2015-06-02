@@ -364,6 +364,11 @@ RC SM_Manager::Load(const char *relName,
     char line[MAXATTRS * (MAXSTRINGLEN+1)];
     int numTuplesAdded = 0;
     while (inputfile.getline(line, MAXATTRS * (MAXSTRINGLEN+1), '\n')) {
+        if (bAbort && (rand() % 100) < abortProb) {
+            cout << "[ CRASH WHILE LOAD ]" << endl;
+            abort();
+        }
+
         RID rid;
         char recData[relMetadata->tupleLength];
         memset(recData, 0, relMetadata->tupleLength);

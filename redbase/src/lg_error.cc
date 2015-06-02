@@ -15,9 +15,6 @@ static char *LG_WarnMsg[] = {
   (char *) "The log is empty"
 };
 
-#define LG_INTRANSACTION                (START_LG_WARN + 0)
-#define LG_NOTINTRANSACTION             (START_LG_WARN + 1)
-#define LG_LOGEMPTY                     (START_LG_WARN + 2)
 static char *LG_ErrorMsg[] = {
 
 };

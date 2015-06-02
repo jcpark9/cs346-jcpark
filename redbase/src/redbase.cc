@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cstring>
 #include <unistd.h>
+#include <stdlib.h>
 #include "redbase.h"
 #include "rm.h"
 #include "sm.h"
@@ -28,7 +29,7 @@ int main(int argc, char *argv[])
     // Look for 2 arguments.  The first is always the name of the program
     // that was executed, and the second should be the name of the
     // database.
-    if (argc != 2) {
+    if (argc < 2 || argc > 3) {
         cerr << "Usage: " << argv[0] << " dbname \n";
         exit(1);
     }
@@ -46,6 +47,13 @@ int main(int argc, char *argv[])
     IX_Manager ixm(pfm);
     SM_Manager smm(ixm, rmm, lgm);
     QL_Manager qlm(smm, ixm, rmm, lgm);
+
+    if (argc == 3) {
+        bAbort = 1;
+        abortProb = atoi(argv[2]);
+    } else {
+        bAbort = 0;
+    }
 
     // open the database
     if ((rc = smm.OpenDb(dbname))) {

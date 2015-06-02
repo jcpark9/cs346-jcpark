@@ -1,0 +1,8 @@
+create table t1(id  i,  char  c10,  float  f);
+create table t2(id  i,  char  c10,  float  f);
+
+load t1("../t1.data");
+
+begin transaction;
+abort on 10;
+load t2("../t2.data");

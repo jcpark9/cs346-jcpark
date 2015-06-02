@@ -65,6 +65,8 @@ int bQueryPlans;           // When to print the query plans
 
 int bAbort;
 
+int abortProb;
+
 PF_Manager *pPfm;          // PF component manager
 SM_Manager *pSmm;          // SM component manager
 QL_Manager *pQlm;          // QL component manager
@@ -174,6 +176,7 @@ LG_Manager *pLgm;          // LG component manager
       checkpoint
       printlog
       abortprogram
+      aborton
 %%
 
 start
@@ -253,6 +256,7 @@ utility
    | statistics 
    | queryplans
    | abortprogram 
+   | aborton
    ;
 
 queryplans
@@ -273,8 +277,15 @@ queryplans
 abortprogram
    : RW_ABORT RW_PROGRAM
    {
+      $$ = newnode(N_ABORTPROGRAM);
+   }   
+
+aborton
+   : RW_ABORT RW_ON T_INT
+   {
       bAbort = 1;
-      cout << "Abort when executing the next statement .\n";
+      abortProb = $3;
+      cout << "Abort when executing the next statement with " << abortProb << "% chance.\n";
       $$ = NULL;
    }   
 

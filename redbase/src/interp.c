@@ -76,8 +76,12 @@ RC interp(NODE *n)
       echo_query(n);
 
    switch(n -> kind){
+      case N_ABORTPROGRAM:
+         abort();
+         break;
+
       case N_PRINTLOG:
-         errval = pLgm->PrintLog(0);
+         errval = pLgm->PrintLog();
          break;
 
       case N_BEGINTRANSACTION:

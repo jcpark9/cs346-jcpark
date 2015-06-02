@@ -482,6 +482,11 @@ RC qUpdate::GetNext(RM_Record &rec) {
         if ((rc = Begin())) return rc;
     }
 
+    if (bAbort && (rand() % 100) < abortProb) {
+        cout << "[ CRASH WHILE DELETE ]" << endl;
+        abort();
+    }
+
     char *pData; RID rid;
     rc = child->GetNext(rec);
     
@@ -503,13 +508,6 @@ RC qUpdate::GetNext(RM_Record &rec) {
         if ((rc = ih.DeleteEntry(pData + updAttrInfo.offset, rid))) return rc;
     }
 
-    /* Write new data for the updated attribute */
-    if (bIsValue) {
-        memcpy(pData + updAttrInfo.offset, rhsValue.data, updAttrInfo.attrLength);
-    } else {
-        memcpy(pData + updAttrInfo.offset, pData + rhsAttrInfo.offset, updAttrInfo.attrLength);
-    }
-
     /* Insert log record */
     LG_FullRec logRec;
     memset(&logRec, 0, sizeof(LG_FullRec));
@@ -524,6 +522,13 @@ RC qUpdate::GetNext(RM_Record &rec) {
         if ((rc = lgm->InsertLogRec(logRec, pData + updAttrInfo.offset, pData + rhsAttrInfo.offset))) return rc;
     }
     if ((rc = fh.UpdatePageLSN(rid, logRec.lsn))) return rc;
+
+    /* Write new data for the updated attribute */
+    if (bIsValue) {
+        memcpy(pData + updAttrInfo.offset, rhsValue.data, updAttrInfo.attrLength);
+    } else {
+        memcpy(pData + updAttrInfo.offset, pData + rhsAttrInfo.offset, updAttrInfo.attrLength);
+    }
 
     /* Update record */
     if ((rc = fh.UpdateRec(rec))) return rc;
@@ -588,6 +593,11 @@ RC qDelete::GetNext(RM_Record &rec) {
     RC rc;
     if (!initialized) {
         if ((rc = Begin())) return rc;
+    }
+
+    if (bAbort && (rand() % 100) < abortProb) {
+        cout << "[ CRASH WHILE DELETE ]" << endl;
+        abort();
     }
 
     char *pData; RID rid;
